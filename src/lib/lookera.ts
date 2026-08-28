@@ -52,14 +52,19 @@ export function toDateKey(date: Date) {
   return `${y}-${m}-${d}`;
 }
 
+function parseTime(time: string): [number, number] {
+  const parts = hhmm(time).split(":");
+  return [Number(parts[0] ?? 0), Number(parts[1] ?? 0)];
+}
+
 export function minutesBetween(start: string, end: string) {
-  const [sh, sm] = hhmm(start).split(":").map(Number);
-  const [eh, em] = hhmm(end).split(":").map(Number);
+  const [sh, sm] = parseTime(start);
+  const [eh, em] = parseTime(end);
   return eh * 60 + em - (sh * 60 + sm);
 }
 
 export function addMinutesToTime(time: string, minutes: number) {
-  const [h, m] = hhmm(time).split(":").map(Number);
+  const [h, m] = parseTime(time);
   const total = h * 60 + m + minutes;
   return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
@@ -75,7 +80,7 @@ export function slugify(input: string) {
 }
 
 export function formatDateIt(dateKey: string) {
-  const [y, m, d] = dateKey.split("-").map(Number);
+  const [y, m, d] = dateKey.split("-").map(Number) as [number, number, number];
   return new Date(y, m - 1, d).toLocaleDateString("it-IT", {
     weekday: "long",
     day: "numeric",
@@ -85,8 +90,8 @@ export function formatDateIt(dateKey: string) {
 
 /** Hours left before an appointment starts */
 export function hoursUntil(dateKey: string, startTime: string) {
-  const [y, m, d] = dateKey.split("-").map(Number);
-  const [h, mi] = hhmm(startTime).split(":").map(Number);
+  const [y, m, d] = dateKey.split("-").map(Number) as [number, number, number];
+  const [h, mi] = parseTime(startTime);
   const target = new Date(y, m - 1, d, h, mi);
   return (target.getTime() - Date.now()) / 3600000;
 }
