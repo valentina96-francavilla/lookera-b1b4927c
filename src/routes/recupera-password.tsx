@@ -48,7 +48,10 @@ function ResetPage() {
       redirectTo: `${window.location.origin}/recupera-password`,
     });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setSent(true);
     toast.success("Ti abbiamo inviato un'email con il link di recupero.");
   }
@@ -56,11 +59,17 @@ function ResetPage() {
   async function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const password = String(new FormData(e.currentTarget).get("password") ?? "");
-    if (password.length < 8) return toast.error("La password deve avere almeno 8 caratteri");
+    if (password.length < 8) {
+      toast.error("La password deve avere almeno 8 caratteri");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Password aggiornata");
     navigate({ to: "/dashboard" });
   }
