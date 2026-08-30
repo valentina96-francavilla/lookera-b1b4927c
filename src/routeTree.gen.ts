@@ -13,7 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RecuperaPasswordRouteImport } from './routes/recupera-password'
+import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedOrariRouteImport } from './routes/_authenticated/orari'
+import { Route as AuthenticatedServiziRouteImport } from './routes/_authenticated/servizi'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,9 +38,29 @@ const RecuperaPasswordRoute = RecuperaPasswordRouteImport.update({
   path: '/recupera-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrariRoute = AuthenticatedOrariRouteImport.update({
+  id: '/orari',
+  path: '/orari',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedServiziRoute = AuthenticatedServiziRouteImport.update({
+  id: '/servizi',
+  path: '/servizi',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -44,13 +68,21 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/orari': typeof AuthenticatedOrariRoute
+  '/servizi': typeof AuthenticatedServiziRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/orari': typeof AuthenticatedOrariRoute
+  '/servizi': typeof AuthenticatedServiziRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,20 +90,44 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
+  '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/orari': typeof AuthenticatedOrariRoute
+  '/_authenticated/servizi': typeof AuthenticatedServiziRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/recupera-password' | '/onboarding'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/recupera-password'
+    | '/calendario'
+    | '/dashboard'
+    | '/onboarding'
+    | '/orari'
+    | '/servizi'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/recupera-password' | '/onboarding'
+  to:
+    | '/'
+    | '/auth'
+    | '/recupera-password'
+    | '/calendario'
+    | '/dashboard'
+    | '/onboarding'
+    | '/orari'
+    | '/servizi'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/recupera-password'
+    | '/_authenticated/calendario'
+    | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
+    | '/_authenticated/orari'
+    | '/_authenticated/servizi'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -111,6 +167,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecuperaPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/calendario': {
+      id: '/_authenticated/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -118,15 +188,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/orari': {
+      id: '/_authenticated/orari'
+      path: '/orari'
+      fullPath: '/orari'
+      preLoaderRoute: typeof AuthenticatedOrariRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/servizi': {
+      id: '/_authenticated/servizi'
+      path: '/servizi'
+      fullPath: '/servizi'
+      preLoaderRoute: typeof AuthenticatedServiziRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedOrariRoute: typeof AuthenticatedOrariRoute
+  AuthenticatedServiziRoute: typeof AuthenticatedServiziRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedOrariRoute: AuthenticatedOrariRoute,
+  AuthenticatedServiziRoute: AuthenticatedServiziRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
