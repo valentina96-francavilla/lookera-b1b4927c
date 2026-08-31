@@ -14,10 +14,14 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as RecuperaPasswordRouteImport } from './routes/recupera-password'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
+import { Route as AuthenticatedClientiRouteImport } from './routes/_authenticated/clienti'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOrariRouteImport } from './routes/_authenticated/orari'
+import { Route as AuthenticatedPrenotazioniRouteImport } from './routes/_authenticated/prenotazioni'
+import { Route as AuthenticatedRecensioniRouteImport } from './routes/_authenticated/recensioni'
 import { Route as AuthenticatedServiziRouteImport } from './routes/_authenticated/servizi'
+import { Route as SalonSlugRouteImport } from './routes/salon.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -43,6 +47,11 @@ const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
   path: '/calendario',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedClientiRoute = AuthenticatedClientiRouteImport.update({
+  id: '/clienti',
+  path: '/clienti',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -58,10 +67,26 @@ const AuthenticatedOrariRoute = AuthenticatedOrariRouteImport.update({
   path: '/orari',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPrenotazioniRoute =
+  AuthenticatedPrenotazioniRouteImport.update({
+    id: '/prenotazioni',
+    path: '/prenotazioni',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRecensioniRoute = AuthenticatedRecensioniRouteImport.update({
+  id: '/recensioni',
+  path: '/recensioni',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedServiziRoute = AuthenticatedServiziRouteImport.update({
   id: '/servizi',
   path: '/servizi',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const SalonSlugRoute = SalonSlugRouteImport.update({
+  id: '/salon/$slug',
+  path: '/salon/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -69,20 +94,28 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
+  '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/orari': typeof AuthenticatedOrariRoute
+  '/prenotazioni': typeof AuthenticatedPrenotazioniRoute
+  '/recensioni': typeof AuthenticatedRecensioniRoute
   '/servizi': typeof AuthenticatedServiziRoute
+  '/salon/$slug': typeof SalonSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
+  '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/orari': typeof AuthenticatedOrariRoute
+  '/prenotazioni': typeof AuthenticatedPrenotazioniRoute
+  '/recensioni': typeof AuthenticatedRecensioniRoute
   '/servizi': typeof AuthenticatedServiziRoute
+  '/salon/$slug': typeof SalonSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,10 +124,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/recupera-password': typeof RecuperaPasswordRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
+  '/_authenticated/clienti': typeof AuthenticatedClientiRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/orari': typeof AuthenticatedOrariRoute
+  '/_authenticated/prenotazioni': typeof AuthenticatedPrenotazioniRoute
+  '/_authenticated/recensioni': typeof AuthenticatedRecensioniRoute
   '/_authenticated/servizi': typeof AuthenticatedServiziRoute
+  '/salon/$slug': typeof SalonSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -103,20 +140,28 @@ export interface FileRouteTypes {
     | '/auth'
     | '/recupera-password'
     | '/calendario'
+    | '/clienti'
     | '/dashboard'
     | '/onboarding'
     | '/orari'
+    | '/prenotazioni'
+    | '/recensioni'
     | '/servizi'
+    | '/salon/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/recupera-password'
     | '/calendario'
+    | '/clienti'
     | '/dashboard'
     | '/onboarding'
     | '/orari'
+    | '/prenotazioni'
+    | '/recensioni'
     | '/servizi'
+    | '/salon/$slug'
   id:
     | '__root__'
     | '/'
@@ -124,10 +169,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/recupera-password'
     | '/_authenticated/calendario'
+    | '/_authenticated/clienti'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
     | '/_authenticated/orari'
+    | '/_authenticated/prenotazioni'
+    | '/_authenticated/recensioni'
     | '/_authenticated/servizi'
+    | '/salon/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,6 +184,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   RecuperaPasswordRoute: typeof RecuperaPasswordRoute
+  SalonSlugRoute: typeof SalonSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -174,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/clienti': {
+      id: '/_authenticated/clienti'
+      path: '/clienti'
+      fullPath: '/clienti'
+      preLoaderRoute: typeof AuthenticatedClientiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -195,6 +252,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrariRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/prenotazioni': {
+      id: '/_authenticated/prenotazioni'
+      path: '/prenotazioni'
+      fullPath: '/prenotazioni'
+      preLoaderRoute: typeof AuthenticatedPrenotazioniRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recensioni': {
+      id: '/_authenticated/recensioni'
+      path: '/recensioni'
+      fullPath: '/recensioni'
+      preLoaderRoute: typeof AuthenticatedRecensioniRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/servizi': {
       id: '/_authenticated/servizi'
       path: '/servizi'
@@ -202,22 +273,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServiziRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/salon/$slug': {
+      id: '/salon/$slug'
+      path: '/salon/$slug'
+      fullPath: '/salon/$slug'
+      preLoaderRoute: typeof SalonSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
+  AuthenticatedClientiRoute: typeof AuthenticatedClientiRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOrariRoute: typeof AuthenticatedOrariRoute
+  AuthenticatedPrenotazioniRoute: typeof AuthenticatedPrenotazioniRoute
+  AuthenticatedRecensioniRoute: typeof AuthenticatedRecensioniRoute
   AuthenticatedServiziRoute: typeof AuthenticatedServiziRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
+  AuthenticatedClientiRoute: AuthenticatedClientiRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOrariRoute: AuthenticatedOrariRoute,
+  AuthenticatedPrenotazioniRoute: AuthenticatedPrenotazioniRoute,
+  AuthenticatedRecensioniRoute: AuthenticatedRecensioniRoute,
   AuthenticatedServiziRoute: AuthenticatedServiziRoute,
 }
 
@@ -229,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   RecuperaPasswordRoute: RecuperaPasswordRoute,
+  SalonSlugRoute: SalonSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

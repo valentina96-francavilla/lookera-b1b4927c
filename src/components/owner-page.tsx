@@ -52,7 +52,12 @@ export function OwnerPage({
   }
 
   return (
-    <AppShell role="owner" title={title} subtitle={subtitle} actions={actions}>
+    <AppShell
+      role="owner"
+      title={title}
+      {...(subtitle === undefined ? {} : { subtitle })}
+      {...(actions === undefined ? {} : { actions })}
+    >
       {children(salon)}
     </AppShell>
   );
