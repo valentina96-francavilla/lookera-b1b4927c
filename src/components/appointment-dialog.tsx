@@ -71,7 +71,12 @@ export function AppointmentDialog({
   });
 
   const update = useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (patch: {
+      status?: "pending" | "confirmed" | "completed" | "cancelled" | "no_show";
+      appointment_date?: string;
+      start_time?: string;
+      end_time?: string;
+    }) => {
       const { error } = await supabase
         .from("appointments")
         .update(patch)
