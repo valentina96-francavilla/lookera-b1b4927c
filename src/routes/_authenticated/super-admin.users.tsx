@@ -40,16 +40,16 @@ function UsersPage() {
   const [q, setQ] = useState("");
 
   const [showCreateForm, setShowCreateForm] =
-  useState(false);
+    useState(false);
 
-const [creatingUser, setCreatingUser] =
-  useState(false);
+  const [creatingUser, setCreatingUser] =
+    useState(false);
 
-const [newUser, setNewUser] = useState({
-  name: "",
-  email: "",
-  password: "",
-});
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const [editingUserId, setEditingUserId] =
     useState<string | null>(null);
@@ -70,66 +70,68 @@ const [newUser, setNewUser] = useState({
   );
 
   async function createUser() {
-  if (
-    !newUser.name.trim() ||
-    !newUser.email.trim() ||
-    !newUser.password
-  ) {
-    alert("Compila tutti i campi.");
-    return;
-  }
+    if (
+      !newUser.name.trim() ||
+      !newUser.email.trim() ||
+      !newUser.password
+    ) {
+      alert("Compila tutti i campi.");
+      return;
+    }
 
-  if (newUser.password.length < 8) {
-    alert("La password deve contenere almeno 8 caratteri.");
-    return;
-  }
-
-  setCreatingUser(true);
-
-  try {
-    const { data, error } =
-      await supabase.functions.invoke(
-        "admin-manage-user",
-        {
-          body: {
-            action: "create",
-            name: newUser.name,
-            email: newUser.email,
-            password: newUser.password,
-          },
-        },
+    if (newUser.password.length < 8) {
+      alert(
+        "La password deve contenere almeno 8 caratteri.",
       );
-
-    if (error) {
-      throw error;
+      return;
     }
 
-    if (data?.error) {
-      throw new Error(data.error);
+    setCreatingUser(true);
+
+    try {
+      const { data, error } =
+        await supabase.functions.invoke(
+          "admin-manage-user",
+          {
+            body: {
+              action: "create",
+              name: newUser.name,
+              email: newUser.email,
+              password: newUser.password,
+            },
+          },
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ["sa", "users"],
+      });
+
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+      });
+
+      setShowCreateForm(false);
+
+      alert("Cliente creato correttamente.");
+    } catch (error: any) {
+      alert(
+        error?.message ??
+          "Errore durante la creazione dell'utente.",
+      );
+    } finally {
+      setCreatingUser(false);
     }
-
-    await queryClient.invalidateQueries({
-      queryKey: ["sa", "users"],
-    });
-
-    setNewUser({
-      name: "",
-      email: "",
-      password: "",
-    });
-
-    setShowCreateForm(false);
-
-    alert("Cliente creato correttamente.");
-  } catch (error: any) {
-    alert(
-      error?.message ??
-        "Errore durante la creazione dell'utente.",
-    );
-  } finally {
-    setCreatingUser(false);
   }
-}
 
   function startEditRole(user: any) {
     setEditingUserId(user.id);
@@ -172,6 +174,10 @@ const [newUser, setNewUser] = useState({
 
       await queryClient.invalidateQueries({
         queryKey: ["sa", "users"],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["sa", "salons"],
       });
 
       cancelEdit();
@@ -261,98 +267,102 @@ const [newUser, setNewUser] = useState({
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-  <Input
-    placeholder="Cerca per email o nome…"
-    value={q}
-    onChange={(e) => setQ(e.target.value)}
-    className="max-w-xs"
-  />
+        <Input
+          placeholder="Cerca per email o nome…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-xs"
+        />
 
-  <Button
-    onClick={() => setShowCreateForm((v) => !v)}
-  >
-    <UserPlus className="mr-2 h-4 w-4" />
-    Nuovo utente
-  </Button>
-</div>
+        <Button
+          onClick={() =>
+            setShowCreateForm((v) => !v)
+          }
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          Nuovo utente
+        </Button>
+      </div>
 
-{showCreateForm && (
-  <div className="surface p-5">
-    <div className="mb-4">
-      <h2 className="font-semibold">
-        Nuovo utente
-      </h2>
+      {showCreateForm && (
+        <div className="surface p-5">
+          <div className="mb-4">
+            <h2 className="font-semibold">
+              Nuovo utente
+            </h2>
 
-      <p className="text-sm text-muted-foreground">
-        Il nuovo account verrà creato come Cliente.
-      </p>
-    </div>
+            <p className="text-sm text-muted-foreground">
+              Il nuovo account verrà creato come Cliente.
+            </p>
+          </div>
 
-    <div className="grid gap-4 sm:grid-cols-3">
-      <Input
-        placeholder="Nome e cognome"
-        value={newUser.name}
-        onChange={(e) =>
-          setNewUser({
-            ...newUser,
-            name: e.target.value,
-          })
-        }
-      />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Input
+              placeholder="Nome e cognome"
+              value={newUser.name}
+              onChange={(e) =>
+                setNewUser({
+                  ...newUser,
+                  name: e.target.value,
+                })
+              }
+            />
 
-      <Input
-        type="email"
-        placeholder="Email"
-        value={newUser.email}
-        onChange={(e) =>
-          setNewUser({
-            ...newUser,
-            email: e.target.value,
-          })
-        }
-      />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={newUser.email}
+              onChange={(e) =>
+                setNewUser({
+                  ...newUser,
+                  email: e.target.value,
+                })
+              }
+            />
 
-      <Input
-        type="password"
-        placeholder="Password (min. 8 caratteri)"
-        value={newUser.password}
-        onChange={(e) =>
-          setNewUser({
-            ...newUser,
-            password: e.target.value,
-          })
-        }
-      />
-    </div>
+            <Input
+              type="password"
+              placeholder="Password (min. 8 caratteri)"
+              value={newUser.password}
+              onChange={(e) =>
+                setNewUser({
+                  ...newUser,
+                  password: e.target.value,
+                })
+              }
+            />
+          </div>
 
-    <div className="mt-4 flex gap-2">
-      <Button
-        onClick={createUser}
-        disabled={creatingUser}
-      >
-        <Save className="mr-2 h-4 w-4" />
-        {creatingUser
-          ? "Creazione..."
-          : "Crea utente"}
-      </Button>
+          <div className="mt-4 flex gap-2">
+            <Button
+              onClick={createUser}
+              disabled={creatingUser}
+            >
+              <Save className="mr-2 h-4 w-4" />
 
-      <Button
-        variant="outline"
-        onClick={() => {
-          setShowCreateForm(false);
-          setNewUser({
-            name: "",
-            email: "",
-            password: "",
-          });
-        }}
-      >
-        <X className="mr-2 h-4 w-4" />
-        Annulla
-      </Button>
-    </div>
-  </div>
-)}
+              {creatingUser
+                ? "Creazione..."
+                : "Crea utente"}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCreateForm(false);
+
+                setNewUser({
+                  name: "",
+                  email: "",
+                  password: "",
+                });
+              }}
+            >
+              <X className="mr-2 h-4 w-4" />
+              Annulla
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="surface overflow-x-auto">
         <table className="w-full text-sm">
