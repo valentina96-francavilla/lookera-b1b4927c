@@ -10,6 +10,7 @@ import {
   Save,
   ChevronDown,
   ChevronUp,
+  UserPlus,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -90,6 +91,14 @@ function SalonsPage() {
   const [form, setForm] = useState<SalonForm>(emptyForm);
 
   const [savingSalon, setSavingSalon] = useState(false);
+  const [showOwnerForm, setShowOwnerForm] = useState(false);
+  const [creatingOwner, setCreatingOwner] = useState(false);
+
+  const [ownerForm, setOwnerForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const [serviceEditingId, setServiceEditingId] = useState<string | null>(
     null,
@@ -172,6 +181,91 @@ function SalonsPage() {
     setServiceEditingId(null);
   }
 
+    async function createOwner() {
+    if (!editingId || editingId === "new") {
+      alert("Salva prima il punto vendita.");
+      return;
+    }
+
+    if (
+      !ownerForm.name.trim() ||
+      !ownerForm.email.trim() ||
+      !ownerForm.password
+    ) {
+      alert("Nome, email e password sono obbligatori.");
+      return;
+    }
+
+    if (ownerForm.password.length < 8) {
+      alert("La password deve contenere almeno 8 caratteri.");
+      return;
+    }
+
+    setCreatingOwner(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "create-owner",
+        {
+          body: {
+            salon_id: editingId,
+            name: ownerForm.name.trim(),
+            email: ownerForm.email.trim(),
+            password: ownerForm.password,
+          },
+        },
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      const ownerId = data?.owner?.id;
+
+      if (!ownerId) {
+        throw new Error(
+          "Proprietario creato ma ID non restituito.",
+        );
+      }
+
+      setForm((f) => ({
+        ...f,
+        owner_id: ownerId,
+      }));
+
+      await queryClient.invalidateQueries({
+        queryKey: ["sa", "users"],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["sa", "salons"],
+      });
+
+      setOwnerForm({
+        name: "",
+        email: "",
+        password: "",
+      });
+
+      setShowOwnerForm(false);
+
+      alert(
+        `Proprietario "${data.owner.full_name}" creato correttamente.`,
+      );
+    } catch (error: any) {
+      alert(
+        error?.message ??
+          "Errore durante la creazione del proprietario.",
+      );
+    } finally {
+      setCreatingOwner(false);
+    }
+  }
+  
   async function saveSalon() {
     if (!form.name.trim() || !form.slug.trim()) {
       alert("Nome e slug sono obbligatori.");
@@ -620,36 +714,126 @@ function SalonsPage() {
                 />
               </div>
 
-              <div>
+                            <div>
                 <label className="mb-1 block text-sm font-medium">
                   Proprietario
                 </label>
 
-                <select
-                  value={form.owner_id}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      owner_id: e.target.value,
-                    }))
-                  }
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  <option value="">Nessun proprietario</option>
+                <div className="flex gap-2">
+                  <select
+                    value={form.owner_id}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        owner_id: e.target.value,
+                      }))
+                    }
+                    className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">Nessun proprietario</option>
 
-                  {(users.data ?? [])
-                    .filter((u) => u.roles?.includes("owner"))
-                    .map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.full_name || u.email} — {u.email}
-                      </option>
-                    ))}
-                </select>
+                    {(users.data ?? [])
+                      .filter((u) =>
+                        u.roles?.includes("owner"),
+                      )
+                      .map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.full_name || u.email} — {u.email}
+                        </option>
+                      ))}
+                  </select>
 
-                <p className="mt-1 text-xs text-muted-foreground">
-                  La creazione di un nuovo proprietario la aggiungiamo nel
-                  prossimo passaggio.
-                </p>
+                  {editingId !== "new" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      title="Crea nuovo proprietario"
+                      onClick={() =>
+                        setShowOwnerForm((v) => !v)
+                      }
+                    >
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {editingId === "new" && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Salva prima il punto vendita per poter creare
+                    il proprietario.
+                  </p>
+                )}
+
+                {showOwnerForm && editingId !== "new" && (
+                  <div className="mt-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <h4 className="mb-3 font-medium">
+                      Nuovo proprietario
+                    </h4>
+
+                    <div className="grid gap-3 md:grid-cols-3">
+                      <Input
+                        placeholder="Nome e cognome"
+                        value={ownerForm.name}
+                        onChange={(e) =>
+                          setOwnerForm((f) => ({
+                            ...f,
+                            name: e.target.value,
+                          }))
+                        }
+                      />
+
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        value={ownerForm.email}
+                        onChange={(e) =>
+                          setOwnerForm((f) => ({
+                            ...f,
+                            email: e.target.value,
+                          }))
+                        }
+                      />
+
+                      <Input
+                        type="password"
+                        placeholder="Password (min. 8 caratteri)"
+                        value={ownerForm.password}
+                        onChange={(e) =>
+                          setOwnerForm((f) => ({
+                            ...f,
+                            password: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={createOwner}
+                        disabled={creatingOwner}
+                      >
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        {creatingOwner
+                          ? "Creazione…"
+                          : "Crea proprietario"}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setShowOwnerForm(false)
+                        }
+                      >
+                        Annulla
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
