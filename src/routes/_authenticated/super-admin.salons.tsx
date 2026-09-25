@@ -1048,7 +1048,7 @@ function SalonsPage() {
                               </div>
                             </div>
                           </div>
-                        )}
+                        ))}
                       </div>
                     )}
                   </div>
