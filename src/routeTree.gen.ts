@@ -21,7 +21,12 @@ import { Route as AuthenticatedOrariRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPrenotazioniRouteImport } from './routes/_authenticated/prenotazioni'
 import { Route as AuthenticatedRecensioniRouteImport } from './routes/_authenticated/recensioni'
 import { Route as AuthenticatedServiziRouteImport } from './routes/_authenticated/servizi'
+import { Route as AuthenticatedSuperAdminRouteImport } from './routes/_authenticated/super-admin'
 import { Route as SalonSlugRouteImport } from './routes/salon.$slug'
+import { Route as AuthenticatedSuperAdminIndexRouteImport } from './routes/_authenticated/super-admin.index'
+import { Route as AuthenticatedSuperAdminAppointmentsRouteImport } from './routes/_authenticated/super-admin.appointments'
+import { Route as AuthenticatedSuperAdminSalonsRouteImport } from './routes/_authenticated/super-admin.salons'
+import { Route as AuthenticatedSuperAdminUsersRouteImport } from './routes/_authenticated/super-admin.users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,11 +88,40 @@ const AuthenticatedServiziRoute = AuthenticatedServiziRouteImport.update({
   path: '/servizi',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSuperAdminRoute = AuthenticatedSuperAdminRouteImport.update({
+  id: '/super-admin',
+  path: '/super-admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const SalonSlugRoute = SalonSlugRouteImport.update({
   id: '/salon/$slug',
   path: '/salon/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSuperAdminIndexRoute =
+  AuthenticatedSuperAdminIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSuperAdminRoute,
+  } as any)
+const AuthenticatedSuperAdminAppointmentsRoute =
+  AuthenticatedSuperAdminAppointmentsRouteImport.update({
+    id: '/appointments',
+    path: '/appointments',
+    getParentRoute: () => AuthenticatedSuperAdminRoute,
+  } as any)
+const AuthenticatedSuperAdminSalonsRoute =
+  AuthenticatedSuperAdminSalonsRouteImport.update({
+    id: '/salons',
+    path: '/salons',
+    getParentRoute: () => AuthenticatedSuperAdminRoute,
+  } as any)
+const AuthenticatedSuperAdminUsersRoute =
+  AuthenticatedSuperAdminUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedSuperAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,7 +135,12 @@ export interface FileRoutesByFullPath {
   '/prenotazioni': typeof AuthenticatedPrenotazioniRoute
   '/recensioni': typeof AuthenticatedRecensioniRoute
   '/servizi': typeof AuthenticatedServiziRoute
+  '/super-admin': typeof AuthenticatedSuperAdminRouteWithChildren
   '/salon/$slug': typeof SalonSlugRoute
+  '/super-admin/appointments': typeof AuthenticatedSuperAdminAppointmentsRoute
+  '/super-admin/salons': typeof AuthenticatedSuperAdminSalonsRoute
+  '/super-admin/users': typeof AuthenticatedSuperAdminUsersRoute
+  '/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,6 +155,10 @@ export interface FileRoutesByTo {
   '/recensioni': typeof AuthenticatedRecensioniRoute
   '/servizi': typeof AuthenticatedServiziRoute
   '/salon/$slug': typeof SalonSlugRoute
+  '/super-admin/appointments': typeof AuthenticatedSuperAdminAppointmentsRoute
+  '/super-admin/salons': typeof AuthenticatedSuperAdminSalonsRoute
+  '/super-admin/users': typeof AuthenticatedSuperAdminUsersRoute
+  '/super-admin': typeof AuthenticatedSuperAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,7 +174,12 @@ export interface FileRoutesById {
   '/_authenticated/prenotazioni': typeof AuthenticatedPrenotazioniRoute
   '/_authenticated/recensioni': typeof AuthenticatedRecensioniRoute
   '/_authenticated/servizi': typeof AuthenticatedServiziRoute
+  '/_authenticated/super-admin': typeof AuthenticatedSuperAdminRouteWithChildren
   '/salon/$slug': typeof SalonSlugRoute
+  '/_authenticated/super-admin/appointments': typeof AuthenticatedSuperAdminAppointmentsRoute
+  '/_authenticated/super-admin/salons': typeof AuthenticatedSuperAdminSalonsRoute
+  '/_authenticated/super-admin/users': typeof AuthenticatedSuperAdminUsersRoute
+  '/_authenticated/super-admin/': typeof AuthenticatedSuperAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,7 +195,12 @@ export interface FileRouteTypes {
     | '/prenotazioni'
     | '/recensioni'
     | '/servizi'
+    | '/super-admin'
     | '/salon/$slug'
+    | '/super-admin/appointments'
+    | '/super-admin/salons'
+    | '/super-admin/users'
+    | '/super-admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -162,6 +215,10 @@ export interface FileRouteTypes {
     | '/recensioni'
     | '/servizi'
     | '/salon/$slug'
+    | '/super-admin/appointments'
+    | '/super-admin/salons'
+    | '/super-admin/users'
+    | '/super-admin'
   id:
     | '__root__'
     | '/'
@@ -176,7 +233,12 @@ export interface FileRouteTypes {
     | '/_authenticated/prenotazioni'
     | '/_authenticated/recensioni'
     | '/_authenticated/servizi'
+    | '/_authenticated/super-admin'
     | '/salon/$slug'
+    | '/_authenticated/super-admin/appointments'
+    | '/_authenticated/super-admin/salons'
+    | '/_authenticated/super-admin/users'
+    | '/_authenticated/super-admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -273,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServiziRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/super-admin': {
+      id: '/_authenticated/super-admin'
+      path: '/super-admin'
+      fullPath: '/super-admin'
+      preLoaderRoute: typeof AuthenticatedSuperAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/salon/$slug': {
       id: '/salon/$slug'
       path: '/salon/$slug'
@@ -280,8 +349,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalonSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/super-admin/': {
+      id: '/_authenticated/super-admin/'
+      path: '/'
+      fullPath: '/super-admin/'
+      preLoaderRoute: typeof AuthenticatedSuperAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRoute
+    }
+    '/_authenticated/super-admin/appointments': {
+      id: '/_authenticated/super-admin/appointments'
+      path: '/appointments'
+      fullPath: '/super-admin/appointments'
+      preLoaderRoute: typeof AuthenticatedSuperAdminAppointmentsRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRoute
+    }
+    '/_authenticated/super-admin/salons': {
+      id: '/_authenticated/super-admin/salons'
+      path: '/salons'
+      fullPath: '/super-admin/salons'
+      preLoaderRoute: typeof AuthenticatedSuperAdminSalonsRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRoute
+    }
+    '/_authenticated/super-admin/users': {
+      id: '/_authenticated/super-admin/users'
+      path: '/users'
+      fullPath: '/super-admin/users'
+      preLoaderRoute: typeof AuthenticatedSuperAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedSuperAdminRoute
+    }
   }
 }
+
+interface AuthenticatedSuperAdminRouteChildren {
+  AuthenticatedSuperAdminAppointmentsRoute: typeof AuthenticatedSuperAdminAppointmentsRoute
+  AuthenticatedSuperAdminSalonsRoute: typeof AuthenticatedSuperAdminSalonsRoute
+  AuthenticatedSuperAdminUsersRoute: typeof AuthenticatedSuperAdminUsersRoute
+  AuthenticatedSuperAdminIndexRoute: typeof AuthenticatedSuperAdminIndexRoute
+}
+
+const AuthenticatedSuperAdminRouteChildren: AuthenticatedSuperAdminRouteChildren =
+  {
+    AuthenticatedSuperAdminAppointmentsRoute:
+      AuthenticatedSuperAdminAppointmentsRoute,
+    AuthenticatedSuperAdminSalonsRoute: AuthenticatedSuperAdminSalonsRoute,
+    AuthenticatedSuperAdminUsersRoute: AuthenticatedSuperAdminUsersRoute,
+    AuthenticatedSuperAdminIndexRoute: AuthenticatedSuperAdminIndexRoute,
+  }
+
+const AuthenticatedSuperAdminRouteWithChildren =
+  AuthenticatedSuperAdminRoute._addFileChildren(
+    AuthenticatedSuperAdminRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
@@ -292,6 +410,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPrenotazioniRoute: typeof AuthenticatedPrenotazioniRoute
   AuthenticatedRecensioniRoute: typeof AuthenticatedRecensioniRoute
   AuthenticatedServiziRoute: typeof AuthenticatedServiziRoute
+  AuthenticatedSuperAdminRoute: typeof AuthenticatedSuperAdminRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -303,6 +422,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPrenotazioniRoute: AuthenticatedPrenotazioniRoute,
   AuthenticatedRecensioniRoute: AuthenticatedRecensioniRoute,
   AuthenticatedServiziRoute: AuthenticatedServiziRoute,
+  AuthenticatedSuperAdminRoute: AuthenticatedSuperAdminRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
