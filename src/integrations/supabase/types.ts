@@ -340,6 +340,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          last_sign_in_at: string
+          roles: string[]
+          updated_at: string
+        }[]
+      }
       available_slots: {
         Args: { p_date: string; p_salon: string; p_service: string }
         Returns: string[]
@@ -351,6 +363,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_super_admin: { Args: never; Returns: boolean }
       owns_salon: { Args: { _salon: string }; Returns: boolean }
       salon_rating: {
         Args: { p_salon: string }
@@ -361,7 +374,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "owner" | "client"
+      app_role: "owner" | "client" | "super_admin"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -495,7 +508,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["owner", "client"],
+      app_role: ["owner", "client", "super_admin"],
       appointment_status: [
         "pending",
         "confirmed",
