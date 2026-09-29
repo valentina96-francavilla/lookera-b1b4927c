@@ -101,12 +101,15 @@ Deno.serve(async (req) => {
 
       const { data: salon, error: salonError } = await admin
         .from("salons")
-        .select("id")
+        .select("id, owner_id")
         .eq("id", salonId)
         .maybeSingle();
 
       if (salonError) return json({ error: salonError.message }, 400);
       if (!salon) return json({ error: "Salone non trovato." }, 404);
+      if (salon.owner_id) {
+        return json({ error: "Questo salone ha già un proprietario." }, 409);
+      }
 
       const { data: created, error: createError } = await admin.auth.admin.createUser({
         email,
@@ -156,18 +159,12 @@ Deno.serve(async (req) => {
         return json({ error: "Non puoi rimuovere il tuo ruolo di Super Admin." }, 400);
       }
 
-      const { error: deleteRolesError } = await admin
-        .from("user_roles")
-        .delete()
-        .eq("user_id", userId);
-
-      if (deleteRolesError) {
-        return json({ error: deleteRolesError.message }, 400);
-      }
-
       const { error: insertRoleError } = await admin
         .from("user_roles")
-        .insert({ user_id: userId, role });
+        .upsert(
+          { user_id: userId, role },
+          { onConflict: "user_id" }
+        );
 
       if (insertRoleError) {
         return json({ error: insertRoleError.message }, 400);
