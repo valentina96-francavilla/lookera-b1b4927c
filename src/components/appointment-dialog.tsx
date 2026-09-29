@@ -37,6 +37,7 @@ export type AppointmentRow = {
   customer_email: string;
   customer_phone: string | null;
   services?: { name: string; duration_min: number } | null;
+  salons?: { name: string } | null;
 };
 
 export function AppointmentDialog({
@@ -106,6 +107,8 @@ export function AppointmentDialog({
         </DialogHeader>
 
         <div className="space-y-2 text-sm">
+          <Row label="Punto vendita" value={appointment.salons?.name || "—"} />
+          <Row label="Servizio" value={appointment.services?.name || "—"} />
           <Row label="Cliente" value={appointment.customer_name || "—"} />
           <Row label="Email" value={appointment.customer_email || "—"} />
           <Row label="Telefono" value={appointment.customer_phone || "—"} />
