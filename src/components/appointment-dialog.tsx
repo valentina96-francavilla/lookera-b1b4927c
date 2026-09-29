@@ -85,6 +85,7 @@ export function AppointmentDialog({
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["sa", "appointments"] });
       qc.invalidateQueries({ queryKey: ["my-appointments"] });
       toast.success("Appuntamento aggiornato");
       setRescheduling(false);
