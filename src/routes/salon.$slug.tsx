@@ -152,7 +152,7 @@ function PublicSalonPage() {
     if (!service || !date || !slot) return;
     const f = new FormData(e.currentTarget);
     setSubmitting(true);
-    const { error } = await supabase.from("appointments").insert({
+    const { data: createdAppointment, error } = await supabase.from("appointments").insert({
       salon_id: salon!.id,
       client_id: user.id,
       service_id: service.id,
@@ -164,13 +164,22 @@ function PublicSalonPage() {
       customer_email: String(f.get("email") ?? "").trim(),
       customer_phone: String(f.get("phone") ?? "").trim() || null,
       notes: String(f.get("notes") ?? "").trim() || null,
-    });
+    }).select("id").single();
     setSubmitting(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Prenotazione inviata! Riceverai conferma dal salone.");
+
+    const { error: emailError } = await supabase.functions.invoke("send-appointment-email", {
+      body: { appointment_id: createdAppointment?.id, event: "requested" },
+    });
+
+    if (emailError) {
+      toast.warning("Prenotazione inviata, ma non è stato possibile inviare le email.");
+    } else {
+      toast.success("Prenotazione inviata! Riceverai conferma dal salone.");
+    }
     navigate({ to: "/prenotazioni" });
   }
 

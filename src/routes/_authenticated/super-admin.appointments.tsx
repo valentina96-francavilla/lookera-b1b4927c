@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { AppointmentDialog, type AppointmentRow } from "@/components/appointment-dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASSES, STATUS_LABELS, hhmm } from "@/lib/lookera";
@@ -14,6 +15,7 @@ function AppointmentsPage() {
   const [salon, setSalon] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentRow | null>(null);
   const s = salons.data ?? [];
   const rows = (appointments.data ?? []).filter(
     (a) => (!salon || a.salon_id === salon) && (!status || a.status === status) && (!date || a.appointment_date === date),
@@ -45,7 +47,19 @@ function AppointmentsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {rows.map((a) => (
-              <tr key={a.id}>
+              <tr
+                key={a.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => setSelectedAppointment(a as unknown as AppointmentRow)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedAppointment(a as unknown as AppointmentRow);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+              >
                 <td className="px-4 py-3">{s.find((x) => x.id === a.salon_id)?.name ?? "—"}</td>
                 <td className="px-4 py-3">{a.customer_name || a.customer_email || "Cliente"}</td>
                 <td className="px-4 py-3">{a.services?.name ?? "—"}</td>
@@ -65,6 +79,12 @@ function AppointmentsPage() {
           </tbody>
         </table>
       </div>
+      <AppointmentDialog
+        appointment={selectedAppointment}
+        onOpenChange={(open) => {
+          if (!open) setSelectedAppointment(null);
+        }}
+      />
     </div>
   );
 }
