@@ -170,7 +170,26 @@ function PublicSalonPage() {
       toast.error(error.message);
       return;
     }
-    toast.success("Prenotazione inviata! Riceverai conferma dal salone.");
+
+    const { error: emailError } = await supabase.functions.invoke("send-appointment-email", {
+      body: { appointment_id: (await supabase
+        .from("appointments")
+        .select("id")
+        .eq("salon_id", salon!.id)
+        .eq("client_id", user.id)
+        .eq("appointment_date", date)
+        .eq("start_time", hhmm(slot))
+        .eq("service_id", service.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()).data?.id, event: "requested" },
+    });
+
+    if (emailError) {
+      toast.warning("Prenotazione inviata, ma non è stato possibile inviare le email.");
+    } else {
+      toast.success("Prenotazione inviata! Riceverai conferma dal salone.");
+    }
     navigate({ to: "/prenotazioni" });
   }
 
