@@ -205,9 +205,10 @@ function SalonsPage() {
 
     try {
       const { data, error } = await supabase.functions.invoke(
-        "create-owner",
+        "admin-manage-user",
         {
           body: {
+            action: "create_owner",
             salon_id: editingId,
             name: ownerForm.name.trim(),
             email: ownerForm.email.trim(),
