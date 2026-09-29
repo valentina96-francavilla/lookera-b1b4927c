@@ -77,7 +77,71 @@ Deno.serve(async (req) => {
         return json({ error: error.message }, 400);
       }
 
+      const { error: roleError } = await admin
+        .from("user_roles")
+        .insert({ user_id: data.user.id, role: "client" });
+
+      if (roleError) {
+        await admin.auth.admin.deleteUser(data.user.id);
+        return json({ error: roleError.message }, 400);
+      }
+
       return json({ user: data.user });
+    }
+
+    if (action === "create_owner") {
+      const salonId = String(body?.salon_id ?? "");
+      const name = String(body?.name ?? "").trim();
+      const email = String(body?.email ?? "").trim().toLowerCase();
+      const password = String(body?.password ?? "");
+
+      if (!salonId || !name || !email || password.length < 8) {
+        return json({ error: "salon_id, nome, email e password di almeno 8 caratteri sono obbligatori." }, 400);
+      }
+
+      const { data: salon, error: salonError } = await admin
+        .from("salons")
+        .select("id")
+        .eq("id", salonId)
+        .maybeSingle();
+
+      if (salonError) return json({ error: salonError.message }, 400);
+      if (!salon) return json({ error: "Salone non trovato." }, 404);
+
+      const { data: created, error: createError } = await admin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: name },
+      });
+
+      if (createError || !created.user) {
+        return json({ error: createError?.message ?? "Impossibile creare il proprietario." }, 400);
+      }
+
+      const ownerId = created.user.id;
+
+      const { error: roleError } = await admin
+        .from("user_roles")
+        .insert({ user_id: ownerId, role: "owner" });
+
+      if (roleError) {
+        await admin.auth.admin.deleteUser(ownerId);
+        return json({ error: roleError.message }, 400);
+      }
+
+      const { error: salonUpdateError } = await admin
+        .from("salons")
+        .update({ owner_id: ownerId })
+        .eq("id", salonId);
+
+      if (salonUpdateError) {
+        await admin.from("user_roles").delete().eq("user_id", ownerId);
+        await admin.auth.admin.deleteUser(ownerId);
+        return json({ error: salonUpdateError.message }, 400);
+      }
+
+      return json({ owner: { id: ownerId, email: created.user.email, full_name: name } });
     }
 
     if (action === "update_role") {
