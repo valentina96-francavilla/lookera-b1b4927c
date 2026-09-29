@@ -84,12 +84,24 @@ export function AppointmentDialog({
         .eq("id", appointment!.id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async (_, patch) => {
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["sa", "appointments"] });
-      qc.invalidateQueries({ queryKey: ["sa", "appointments"] });
       qc.invalidateQueries({ queryKey: ["my-appointments"] });
-      toast.success("Appuntamento aggiornato");
+
+      if (patch.status === "confirmed") {
+        const { error: emailError } = await supabase.functions.invoke("send-appointment-email", {
+          body: { appointment_id: appointment!.id, event: "confirmed" },
+        });
+        if (emailError) {
+          toast.warning("Appuntamento confermato, ma non è stato possibile inviare l'email al cliente.");
+        } else {
+          toast.success("Appuntamento confermato e email inviata al cliente");
+        }
+      } else {
+        toast.success("Appuntamento aggiornato");
+      }
+
       setRescheduling(false);
       onOpenChange(false);
     },
