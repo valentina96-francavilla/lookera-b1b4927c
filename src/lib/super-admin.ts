@@ -81,7 +81,7 @@ export function useAdminData() {
       const { data, error } = await supabase
         .from("appointments")
         .select(
-          "id,salon_id,service_id,client_id,customer_name,customer_email,customer_phone,appointment_date,start_time,end_time,price,status,notes,created_at,services(name,duration_min)",
+          "id,salon_id,service_id,client_id,customer_name,customer_email,customer_phone,appointment_date,start_time,end_time,price,status,notes,created_at,services(name,duration_min),salons(name)",
         )
         .order("appointment_date", { ascending: false })
         .order("start_time", { ascending: false })
@@ -105,6 +105,7 @@ export function useAdminData() {
         notes: string | null;
         created_at: string;
         services: { name: string; duration_min: number } | null;
+        salons: { name: string } | null;
       }>;
     },
   });
