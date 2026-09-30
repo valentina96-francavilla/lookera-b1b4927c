@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -141,31 +141,14 @@ function PublicSalonPage() {
     );
   }
 
-  async function submitBooking(e: React.FormEvent<HTMLFormElement>) {
+  function submitBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!service || !date || !slot) return;
-    const f = new FormData(e.currentTarget);
     setSubmitting(true);
-    const { error } = await supabase.from("appointments").insert({
-      salon_id: salon!.id,
-      client_id: user?.id ?? null,
-      service_id: service.id,
-      appointment_date: date,
-      start_time: hhmm(slot),
-      end_time: addMinutesToTime(slot, service.duration_min),
-      status: "pending" as const,
-      customer_name: String(f.get("name") ?? "").trim(),
-      customer_email: String(f.get("email") ?? "").trim(),
-      customer_phone: String(f.get("phone") ?? "").trim() || null,
-      notes: String(f.get("notes") ?? "").trim() || null,
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Prenotazione inviata! Riceverai conferma dal salone.");
-    navigate({ to: "/prenotazioni" });
+    setTimeout(() => {
+      setSubmitting(false);
+      toast.success("Demo completata! Nessun appuntamento è stato creato.");
+    }, 500);
   }
 
   const today = toDateKey(new Date());
