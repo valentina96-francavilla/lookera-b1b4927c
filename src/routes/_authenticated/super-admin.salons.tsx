@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Check,
@@ -27,6 +27,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { SalonImageUpload } from "@/components/salon-image-upload";
+import { ITALIAN_REGIONS, fetchCities, fetchProvinces } from "@/lib/italian-territories";
 
 export const Route = createFileRoute("/_authenticated/super-admin/salons")({
   component: SalonsPage,
@@ -86,7 +87,6 @@ const emptyForm: SalonForm = {
   activity_type: "Parrucchiere",
 };
 
-const REGIONS = ["Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna","Friuli-Venezia Giulia","Lazio","Liguria","Lombardia","Marche","Molise","Piemonte","Puglia","Sardegna","Sicilia","Toscana","Trentino-Alto Adige","Umbria","Valle d'Aosta","Veneto"];
 
 function SalonsPage() {
   const queryClient = useQueryClient();
@@ -104,6 +104,39 @@ function SalonsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<SalonForm>(emptyForm);
+
+  const [provinceOptions, setProvinceOptions] = useState<string[]>([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [territoryLoading, setTerritoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (!form.region) {
+      setProvinceOptions([]);
+      setCityOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setTerritoryLoading(true);
+    fetchProvinces(form.region)
+      .then((items) => { if (!cancelled) setProvinceOptions(items); })
+      .catch(() => { if (!cancelled) setProvinceOptions([]); })
+      .finally(() => { if (!cancelled) setTerritoryLoading(false); });
+    return () => { cancelled = true; };
+  }, [form.region]);
+
+  useEffect(() => {
+    if (!form.province) {
+      setCityOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setTerritoryLoading(true);
+    fetchCities(form.province)
+      .then((items) => { if (!cancelled) setCityOptions(items); })
+      .catch(() => { if (!cancelled) setCityOptions([]); })
+      .finally(() => { if (!cancelled) setTerritoryLoading(false); });
+    return () => { cancelled = true; };
+  }, [form.province]);
 
   const [savingSalon, setSavingSalon] = useState(false);
   const [showOwnerForm, setShowOwnerForm] = useState(false);
@@ -728,15 +761,24 @@ async function geocodeSalonAddress(form: SalonForm) {
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium">Regione</label>
-                  <Input value={form.region} onChange={(e) => setForm((f) => ({ ...f, region: e.target.value }))} />
+                  <select value={form.region} onChange={(e) => setForm((f) => ({ ...f, region: e.target.value, province: "", city: "" }))} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <option value="">Seleziona regione</option>
+                    {ITALIAN_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">Provincia</label>
-                  <Input value={form.province} onChange={(e) => setForm((f) => ({ ...f, province: e.target.value }))} />
+                  <select value={form.province} disabled={!form.region || territoryLoading} onChange={(e) => setForm((f) => ({ ...f, province: e.target.value, city: "" }))} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <option value="">Seleziona provincia</option>
+                    {provinceOptions.map((p) => <option key={p} value={p}>{p}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium">Città</label>
-                  <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+                  <select value={form.city} disabled={!form.province || territoryLoading} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <option value="">Seleziona città</option>
+                    {cityOptions.map((city) => <option key={city} value={city}>{city}</option>)}
+                  </select>
                 </div>
               </div>
 
