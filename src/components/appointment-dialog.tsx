@@ -82,11 +82,36 @@ export function AppointmentDialog({
         .update(patch)
         .eq("id", appointment!.id);
       if (error) throw error;
+
+      if (patch.status === "confirmed") {
+        const { error: emailError } = await supabase.functions.invoke(
+          "send-appointment-email",
+          {
+            body: {
+              appointment_id: appointment!.id,
+              event: "confirmed",
+            },
+          },
+        );
+
+        if (emailError) {
+          console.error("Errore invio email conferma:", emailError);
+          return { emailError };
+        }
+      }
+
+      return { emailError: null };
     },
-    onSuccess: () => {
+    onSuccess: ({ emailError }) => {
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["my-appointments"] });
-      toast.success("Appuntamento aggiornato");
+      if (emailError) {
+        toast.warning(
+          "Appuntamento confermato, ma non è stato possibile inviare l'email al cliente.",
+        );
+      } else {
+        toast.success("Appuntamento aggiornato");
+      }
       setRescheduling(false);
       onOpenChange(false);
     },
