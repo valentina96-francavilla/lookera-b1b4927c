@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase";
 
 type AddressSuggestion = {
   label: string;
@@ -54,49 +55,12 @@ export function AddressAutocomplete({
         url.searchParams.set("lang", "it");
         url.searchParams.set("countrycode", "IT");
 
-        const response = await fetch(url.toString(), {
-          headers: { Accept: "application/json" },
+        const { data, error } = await supabase.functions.invoke("geocode-address", {
+          body: { q: value.trim(), city, province, region },
         });
 
-        if (!response.ok || requestId !== requestRef.current) return;
-
-        const data = await response.json();
-        const items = Array.isArray(data?.features) ? data.features : [];
-
-        const next = items
-          .map((feature: any): AddressSuggestion | null => {
-            const p = feature?.properties ?? {};
-            const coordinates = feature?.geometry?.coordinates;
-
-            if (
-              !Array.isArray(coordinates) ||
-              coordinates.length < 2 ||
-              typeof coordinates[0] !== "number" ||
-              typeof coordinates[1] !== "number"
-            ) {
-              return null;
-            }
-
-            const street = [p.street, p.housenumber].filter(Boolean).join(" ");
-            const place = [p.city, p.county, p.state]
-              .filter(Boolean)
-              .filter((item, index, arr) => arr.indexOf(item) === index)
-              .join(", ");
-
-            const address = street || p.name || "";
-            const label = [address, place, p.country]
-              .filter(Boolean)
-              .filter((item, index, arr) => arr.indexOf(item) === index)
-              .join(", ");
-
-            return {
-              label: label || "Indirizzo",
-              address: address || value.trim(),
-              latitude: coordinates[1],
-              longitude: coordinates[0],
-            };
-          })
-          .filter((item): item is AddressSuggestion => item !== null);
+        if (error || requestId !== requestRef.current) return;
+        const next = (Array.isArray(data?.suggestions) ? data.suggestions : []) as AddressSuggestion[];
 
         setSuggestions(next);
         setOpen(next.length > 0);
