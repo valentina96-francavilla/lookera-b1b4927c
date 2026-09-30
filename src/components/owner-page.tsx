@@ -14,6 +14,11 @@ export type Salon = {
   email: string | null;
   image_url: string | null;
   cancellation_hours: number;
+  region: string | null;
+  province: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export function OwnerPage({
