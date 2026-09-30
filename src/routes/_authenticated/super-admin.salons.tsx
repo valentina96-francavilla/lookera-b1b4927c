@@ -27,6 +27,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { SalonImageUpload } from "@/components/salon-image-upload";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { ITALIAN_REGIONS, fetchCities, fetchProvinces } from "@/lib/italian-territories";
 
 export const Route = createFileRoute("/_authenticated/super-admin/salons")({
@@ -773,13 +774,25 @@ async function geocodeSalonAddress(form: SalonForm) {
                 <label className="mb-1 block text-sm font-medium">
                   Indirizzo
                 </label>
-                <Input
-                  autoComplete="street-address"
+                <AddressAutocomplete
                   value={form.address}
-                  onChange={(e) =>
+                  city={form.city}
+                  province={form.province}
+                  region={form.region}
+                  onChange={(address) =>
                     setForm((f) => ({
                       ...f,
-                      address: e.target.value,
+                      address,
+                      latitude: "",
+                      longitude: "",
+                    }))
+                  }
+                  onSelect={(suggestion) =>
+                    setForm((f) => ({
+                      ...f,
+                      address: suggestion.address,
+                      latitude: String(suggestion.latitude),
+                      longitude: String(suggestion.longitude),
                     }))
                   }
                 />
