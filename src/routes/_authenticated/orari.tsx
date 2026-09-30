@@ -64,11 +64,11 @@ function AddressField({
   city: string;
   province: string;
   region: string;
-  onSelected: React.Dispatch<React.SetStateAction<{
+  onSelected: (value: {
     address: string;
     latitude: number;
     longitude: number;
-  } | null>>;
+  } | null) => void;
 }) {
   const [address, setAddress] = useState(salonAddress);
 
