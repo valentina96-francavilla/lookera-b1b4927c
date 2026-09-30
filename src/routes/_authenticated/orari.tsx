@@ -211,9 +211,29 @@ function HoursContent({ salon }: { salon: Salon }) {
             <Label htmlFor="s-name">Nome</Label>
             <Input id="s-name" name="name" defaultValue={salon.name} required maxLength={80} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-address">Indirizzo</Label>
-            <Input id="s-address" name="address" defaultValue={salon.address ?? ""} />
+            <Input id="s-address" name="address" defaultValue={salon.address ?? ""} placeholder="Via, numero civico" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-region">Regione</Label>
+            <Input id="s-region" name="region" defaultValue={salon.region ?? ""} placeholder="es. Lazio" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-province">Provincia</Label>
+            <Input id="s-province" name="province" defaultValue={salon.province ?? ""} placeholder="es. Roma" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-city">Città</Label>
+            <Input id="s-city" name="city" defaultValue={salon.city ?? ""} placeholder="es. Roma" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-latitude">Latitudine</Label>
+            <Input id="s-latitude" name="latitude" type="number" step="any" defaultValue={salon.latitude ?? ""} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-longitude">Longitudine</Label>
+            <Input id="s-longitude" name="longitude" type="number" step="any" defaultValue={salon.longitude ?? ""} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-phone">Telefono</Label>
