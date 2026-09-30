@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ITALIAN_REGIONS, fetchCities, fetchProvinces } from "@/lib/italian-territories";
 
 export const Route = createFileRoute("/_authenticated/prenota")({
   component: BookAppointmentRoute,
@@ -48,64 +49,29 @@ function BookAppointmentRoute() {
   const salons = salonsQ.data ?? [];
   const activityTypes = ["Salone di bellezza", "Centro estetico", "Parrucchiere", "Barbiere"];
 
-  const regions = [
-    "Abruzzo",
-    "Basilicata",
-    "Calabria",
-    "Campania",
-    "Emilia-Romagna",
-    "Friuli-Venezia Giulia",
-    "Lazio",
-    "Liguria",
-    "Lombardia",
-    "Marche",
-    "Molise",
-    "Piemonte",
-    "Puglia",
-    "Sardegna",
-    "Sicilia",
-    "Toscana",
-    "Trentino-Alto Adige/Südtirol",
-    "Umbria",
-    "Valle d'Aosta/Vallée d'Aoste",
-    "Veneto",
-  ];
-
-  const [territories, setTerritories] = useState<
-    { nome: string; provincia: string }[]
-  >([]);
-  const [territoriesLoading, setTerritoriesLoading] = useState(false);
+  const regions = [...ITALIAN_REGIONS];
+  const [provinces, setProvinces] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [territoryLoading, setTerritoryLoading] = useState(false);
 
   useEffect(() => {
     if (!region) {
-      setTerritories([]);
+      setProvinces([]);
+      setCities([]);
       return;
     }
 
     let cancelled = false;
-    setTerritoriesLoading(true);
-
-    fetch(
-      `https://comuni-ita.nicolorebaioli.dev/v5/comuni/${encodeURIComponent(region)}?fields=nome,provincia&sort=nome`,
-    )
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Errore nel caricamento dei comuni");
-        return response.json();
-      })
-      .then((data) => {
-        if (cancelled) return;
-        setTerritories(
-          (Array.isArray(data) ? data : data.data ?? []).map((item: any) => ({
-            nome: item.nome,
-            provincia: item.provincia?.nome ?? item.provincia,
-          })),
-        );
+    setTerritoryLoading(true);
+    fetchProvinces(region)
+      .then((items) => {
+        if (!cancelled) setProvinces(items);
       })
       .catch(() => {
-        if (!cancelled) setTerritories([]);
+        if (!cancelled) setProvinces([]);
       })
       .finally(() => {
-        if (!cancelled) setTerritoriesLoading(false);
+        if (!cancelled) setTerritoryLoading(false);
       });
 
     return () => {
@@ -113,20 +79,29 @@ function BookAppointmentRoute() {
     };
   }, [region]);
 
-  const provinces = useMemo(
-    () => [...new Set(territories.map((item) => item.provincia).filter(Boolean))].sort(),
-    [territories],
-  );
+  useEffect(() => {
+    if (!province) {
+      setCities([]);
+      return;
+    }
 
-  const cities = useMemo(
-    () =>
-      territories
-        .filter((item) => !province || item.provincia === province)
-        .map((item) => item.nome)
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b, "it")),
-    [territories, province],
-  );
+    let cancelled = false;
+    setTerritoryLoading(true);
+    fetchCities(province)
+      .then((items) => {
+        if (!cancelled) setCities(items);
+      })
+      .catch(() => {
+        if (!cancelled) setCities([]);
+      })
+      .finally(() => {
+        if (!cancelled) setTerritoryLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [province]);
 
   const filtered = salons.filter(
     (s) =>
@@ -160,8 +135,8 @@ function BookAppointmentRoute() {
         <div className="surface p-5">
           <div className="grid gap-4 md:grid-cols-4">
             <Filter label="Regione" value={region} onChange={changeRegion} options={regions} />
-            <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region || territoriesLoading} />
-            <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province || territoriesLoading} />
+            <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region || territoryLoading} />
+            <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province || territoryLoading} />
             <Filter label="Tipologia attività" value={activityType} onChange={setActivityType} options={activityTypes} />
           </div>
         </div>
