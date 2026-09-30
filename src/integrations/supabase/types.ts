@@ -247,6 +247,11 @@ export type Database = {
           owner_id: string | null
           phone: string | null
           slug: string
+          region: string | null
+          province: string | null
+          city: string | null
+          latitude: number | null
+          longitude: number | null
         }
         Insert: {
           address?: string | null
@@ -260,6 +265,11 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           slug: string
+          region?: string | null
+          province?: string | null
+          city?: string | null
+          latitude?: number | null
+          longitude?: number | null
         }
         Update: {
           address?: string | null
@@ -273,6 +283,11 @@ export type Database = {
           owner_id?: string | null
           phone?: string | null
           slug?: string
+          region?: string | null
+          province?: string | null
+          city?: string | null
+          latitude?: number | null
+          longitude?: number | null
         }
         Relationships: []
       }
