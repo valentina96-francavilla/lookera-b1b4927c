@@ -33,7 +33,7 @@ export function useRole(userId?: string) {
         .eq("user_id", userId!);
       if (error) throw error;
       const roles = (data ?? []).map((r) => r.role);
-      return roles.includes("owner") ? "owner" : "client";
+      return roles.includes("super_admin") ? "super_admin" : roles.includes("owner") ? "owner" : "client";
     },
   });
 }
