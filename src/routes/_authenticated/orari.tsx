@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { WEEKDAYS, hhmm } from "@/lib/lookera";
-import { Trash2 } from "lucide-react";
+import { Trash2, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/orari")({
   component: HoursRoute,
@@ -34,6 +34,20 @@ function HoursRoute() {
       {(salon) => <HoursContent salon={salon} />}
     </OwnerPage>
   );
+}
+
+async function geocodeAddress(input: {
+  address: string;
+  city: string;
+  province: string;
+  region: string;
+}) {
+  const { data, error } = await supabase.functions.invoke("geocode-address", {
+    body: input,
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data as { latitude: number; longitude: number; display_name: string };
 }
 
 function HoursContent({ salon }: { salon: Salon }) {
@@ -188,9 +202,14 @@ function HoursContent({ salon }: { salon: Salon }) {
         <h2 className="text-lg">Informazioni salone</h2>
         <form
           className="mt-4 grid gap-4 sm:grid-cols-2"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             const f = new FormData(e.currentTarget);
+            const address = String(f.get("address") ?? "").trim();
+            const region = String(f.get("region") ?? "").trim();
+            const province = String(f.get("province") ?? "").trim();
+            const city = String(f.get("city") ?? "").trim();
+
             saveSalon.mutate({
               name: String(f.get("name") ?? "").trim(),
               description: String(f.get("description") ?? "").trim(),
