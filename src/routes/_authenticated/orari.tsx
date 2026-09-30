@@ -212,9 +212,6 @@ function HoursContent({ salon }: { salon: Salon }) {
             const region = String(f.get("region") ?? "").trim();
             const province = String(f.get("province") ?? "").trim();
             const city = String(f.get("city") ?? "").trim();
-            const address = String(f.get("address") ?? "").trim();
-            const region = String(f.get("region") ?? "").trim();
-            const province = String(f.get("province") ?? "").trim();
 
             void (async () => {
               let latitude = String(f.get("latitude") ?? "").trim();
