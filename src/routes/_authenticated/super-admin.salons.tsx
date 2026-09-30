@@ -341,7 +341,19 @@ async function geocodeSalonAddress(form: SalonForm) {
       region: form.region.trim(),
     },
   });
-  if (error) throw error;
+  if (error) {
+    let message = error.message ?? "Errore durante la geolocalizzazione.";
+    try {
+      const response = (error as any)?.context;
+      if (response?.json) {
+        const body = await response.json();
+        if (body?.error) message = body.error;
+      }
+    } catch {
+      // Mantieni il messaggio originale se il body non è leggibile.
+    }
+    throw new Error(message);
+  }
   if (data?.error) throw new Error(data.error);
   return {
     latitude: String(data.latitude),
