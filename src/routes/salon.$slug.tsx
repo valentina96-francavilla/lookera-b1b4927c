@@ -158,22 +158,45 @@ function PublicSalonPage() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("appointments").insert({
-        salon_id: salon.id,
-        client_id: user.id,
-        service_id: service.id,
-        appointment_date: date,
-        start_time: hhmm(slot),
-        end_time: addMinutesToTime(slot, service.duration_min),
-        status: "pending",
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        notes,
-      });
+      const { data: appointment, error } = await supabase
+        .from("appointments")
+        .insert({
+          salon_id: salon.id,
+          client_id: user.id,
+          service_id: service.id,
+          appointment_date: date,
+          start_time: hhmm(slot),
+          end_time: addMinutesToTime(slot, service.duration_min),
+          status: "pending",
+          customer_name: customerName,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          notes,
+        })
+        .select("id")
+        .single();
+
       if (error) throw error;
 
-      toast.success("Prenotazione inviata!");
+      const { error: emailError } = await supabase.functions.invoke(
+        "send-appointment-email",
+        {
+          body: {
+            appointment_id: appointment.id,
+            event: "requested",
+          },
+        },
+      );
+
+      if (emailError) {
+        console.error("Errore invio email appuntamento:", emailError);
+        toast.warning(
+          "Prenotazione ricevuta, ma non è stato possibile inviare le email di notifica.",
+        );
+      } else {
+        toast.success("Prenotazione inviata! Controlla la tua email.");
+      }
+
       window.location.href = "/prenotazioni";
     } catch (error: any) {
       toast.error(error?.message ?? "Non è stato possibile creare la prenotazione. Riprova.");
