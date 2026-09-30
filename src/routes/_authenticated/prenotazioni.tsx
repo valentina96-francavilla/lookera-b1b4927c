@@ -41,7 +41,13 @@ type Row = {
   price: number | string;
   status: string;
   services: { name: string } | null;
-  salons: { name: string; slug: string; cancellation_hours: number } | null;
+  salons: {
+    name: string;
+    slug: string;
+    cancellation_hours: number;
+    phone: string | null;
+    email: string | null;
+  } | null;
 };
 
 function MyBookingsRoute() {
@@ -57,7 +63,7 @@ function MyBookingsRoute() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("appointments")
-        .select("*, services(name), salons(name,slug,cancellation_hours)")
+        .select("*, services(name), salons(name,slug,cancellation_hours,phone,email)")
         .eq("client_id", user!.id)
         .order("appointment_date", { ascending: false })
         .order("start_time", { ascending: false });
@@ -281,9 +287,10 @@ function MyBookingsRoute() {
           {cancelFor?.salons && (
             <div className="rounded-xl border border-border p-4 text-sm">
               <p className="font-semibold">{cancelFor.salons.name}</p>
-              <p className="mt-2 text-muted-foreground">
-                Per modificare o annullare questo appuntamento contatta direttamente il salone.
-              </p>
+              <div className="mt-3 space-y-1 text-muted-foreground">
+                {cancelFor.salons.phone && <p>Telefono: {cancelFor.salons.phone}</p>}
+                {cancelFor.salons.email && <p>Email: {cancelFor.salons.email}</p>}
+              </div>
             </div>
           )}
         </DialogContent>
