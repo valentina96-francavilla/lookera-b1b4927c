@@ -173,6 +173,7 @@ export function AppointmentDialog({
                     appointment_date: date,
                     start_time: hhmm(slot),
                     end_time: addMinutesToTime(slot, duration),
+                    ...(appointment.status === "cancelled" ? { status: "confirmed" as const } : {}),
                   })
                 }
               >
@@ -190,7 +191,7 @@ export function AppointmentDialog({
                 Conferma
               </Button>
             )}
-            {["pending", "confirmed"].includes(appointment.status) && (
+            {["pending", "confirmed", "cancelled"].includes(appointment.status) && (
               <>
                 <Button size="sm" variant="outline" onClick={() => setRescheduling(true)}>
                   Riprogramma
