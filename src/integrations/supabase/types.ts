@@ -236,58 +236,61 @@ export type Database = {
       }
       salons: {
         Row: {
+          activity_type: string | null
           address: string | null
           cancellation_hours: number
+          city: string | null
           created_at: string
           description: string | null
           email: string | null
           id: string
           image_url: string | null
+          latitude: number | null
+          longitude: number | null
           name: string
           owner_id: string | null
           phone: string | null
-          slug: string
-          region: string | null
           province: string | null
-          city: string | null
-          latitude: number | null
-          longitude: number | null
+          region: string | null
+          slug: string
         }
         Insert: {
+          activity_type?: string | null
           address?: string | null
           cancellation_hours?: number
+          city?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           name: string
           owner_id?: string | null
           phone?: string | null
-          slug: string
-          region?: string | null
           province?: string | null
-          city?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          region?: string | null
+          slug: string
         }
         Update: {
+          activity_type?: string | null
           address?: string | null
           cancellation_hours?: number
+          city?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
           id?: string
           image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           owner_id?: string | null
           phone?: string | null
-          slug?: string
-          region?: string | null
           province?: string | null
-          city?: string | null
-          latitude?: number | null
-          longitude?: number | null
+          region?: string | null
+          slug?: string
         }
         Relationships: []
       }
