@@ -30,12 +30,14 @@ export function AddressAutocomplete({
 }: Props) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const requestRef = useRef(0);
 
   useEffect(() => {
     if (value.trim().length < 3) {
       setSuggestions([]);
+      setError("");
       setOpen(false);
       return;
     }
@@ -43,26 +45,35 @@ export function AddressAutocomplete({
     const requestId = ++requestRef.current;
     const timer = window.setTimeout(async () => {
       setLoading(true);
+      setError("");
+      setSuggestions([]);
 
       try {
         const { data, error } = await supabase.functions.invoke("geocode-address", {
           body: { q: value.trim(), city, province, region },
         });
 
-        if (error || requestId !== requestRef.current) return;
-        const next = (Array.isArray(data?.suggestions) ? data.suggestions : []) as AddressSuggestion[];
+        if (requestId !== requestRef.current) return;
 
+        if (error) {
+          setError("Errore nella ricerca degli indirizzi.");
+          setOpen(true);
+          return;
+        }
+
+        const next = (Array.isArray(data?.suggestions) ? data.suggestions : []) as AddressSuggestion[];
         setSuggestions(next);
-        setOpen(next.length > 0);
+        setOpen(true);
       } catch {
         if (requestId === requestRef.current) {
           setSuggestions([]);
-          setOpen(false);
+          setError("Errore nella ricerca degli indirizzi.");
+          setOpen(true);
         }
       } finally {
         if (requestId === requestRef.current) setLoading(false);
       }
-    }, 350);
+    }, 600);
 
     return () => window.clearTimeout(timer);
   }, [value, city, province, region]);
@@ -75,10 +86,11 @@ export function AddressAutocomplete({
         placeholder={placeholder}
         onChange={(e) => {
           onChange(e.target.value);
+          setError("");
           setOpen(true);
         }}
         onFocus={() => {
-          if (suggestions.length > 0) setOpen(true);
+          if (suggestions.length > 0 || error) setOpen(true);
         }}
         onBlur={() => {
           window.setTimeout(() => setOpen(false), 150);
@@ -93,7 +105,13 @@ export function AddressAutocomplete({
             </div>
           )}
 
-          {!loading &&
+          {!loading && error && (
+            <div className="px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error &&
             suggestions.map((suggestion, index) => (
               <button
                 key={`${suggestion.latitude}-${suggestion.longitude}-${index}`}
@@ -110,7 +128,7 @@ export function AddressAutocomplete({
               </button>
             ))}
 
-          {!loading && suggestions.length === 0 && value.trim().length >= 3 && (
+          {!loading && !error && suggestions.length === 0 && value.trim().length >= 3 && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
               Nessun indirizzo trovato.
             </div>
