@@ -235,7 +235,7 @@ function HoursContent({ salon }: { salon: Salon }) {
               region: String(f.get("region") ?? "").trim(),
               province: String(f.get("province") ?? "").trim(),
               city: String(f.get("city") ?? "").trim(),
-              latitude: String(f.get("latitude") ?? "").trim(),
+              latitude,
               longitude,
               activity_type: String(f.get("activity_type") ?? "Parrucchiere"),
             });
