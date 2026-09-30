@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Clock, MapPin, Phone, Star, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@/hooks/use-auth";
+import { useRole, useSession } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,7 @@ type Service = {
 function PublicSalonPage() {
   const { slug } = Route.useParams();
   const { user } = useSession();
+  const roleQ = useRole(user?.id);
 
   const salonQ = useQuery({
     queryKey: ["public-salon", slug],
@@ -152,6 +153,19 @@ function PublicSalonPage() {
   }
 
   const today = toDateKey(new Date());
+  const availableDays = Array.from({ length: 60 }, (_, i) => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + i);
+    const key = toDateKey(d);
+    const hours = (hoursQ.data ?? []).find((h) => h.day_of_week === d.getDay());
+    return { date: d, key, closed: !hours || hours.is_closed };
+  });
+
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "/index2";
+  }
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -161,9 +175,17 @@ function PublicSalonPage() {
             <ArrowLeft className="h-4 w-4" /> LookEra
           </Link>
           {user ? (
-            <Link to="/prenotazioni" className="text-sm text-primary">
-              Le mie prenotazioni
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to={roleQ.data === "owner" ? "/dashboard" : roleQ.data === "super_admin" ? "/super-admin" : "/prenota"}
+                className="text-sm text-primary"
+              >
+                {roleQ.data === "owner" ? "Profilo negozio" : roleQ.data === "super_admin" ? "Super Admin" : "Prenota appuntamento"}
+              </Link>
+              <button onClick={logout} className="text-sm text-muted-foreground hover:text-foreground">
+                Esci
+              </button>
+            </div>
           ) : (
             <Link to="/auth" className="text-sm text-primary">
               Accedi
@@ -265,16 +287,31 @@ function PublicSalonPage() {
           {service && (
             <div className="surface mt-4 p-5">
               <p className="text-sm font-medium">2. Scegli il giorno</p>
-              <Input
-                type="date"
-                className="mt-3 max-w-xs"
-                min={today}
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setSlot("");
-                }}
-              />
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-7">
+                {availableDays.map(({ date: day, key, closed }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    disabled={closed}
+                    onClick={() => {
+                      setDate(key);
+                      setSlot("");
+                    }}
+                    className={cn(
+                      "rounded-xl border px-2 py-3 text-center text-sm transition-colors",
+                      closed
+                        ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
+                        : date === key
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:bg-muted",
+                    )}
+                    aria-label={closed ? `${formatDateIt(key)} non disponibile` : `Seleziona ${formatDateIt(key)}`}
+                  >
+                    <span className="block font-medium">{day.toLocaleDateString("it-IT", { weekday: "short" })}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">{day.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" })}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
