@@ -782,7 +782,6 @@ async function geocodeSalonAddress(form: SalonForm) {
                 </div>
               </div>
 
-              <datalist id="lookera-regions">{REGIONS.map((r) => <option key={r} value={r} />)}</datalist>
               <input type="hidden" value={form.latitude} readOnly />
               <input type="hidden" value={form.longitude} readOnly />
 
