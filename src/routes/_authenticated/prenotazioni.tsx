@@ -146,7 +146,7 @@ function MyBookingsRoute() {
             {upcoming.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">
                 Nessun appuntamento in programma.{" "}
-                <Link to="/salon/$slug" params={{ slug: "studio-beauty" }} className="text-primary underline">
+                <Link to="/prenota" className="text-primary underline">
                   Prenota ora
                 </Link>
               </p>
