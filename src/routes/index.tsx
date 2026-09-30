@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import heroImage from "@/assets/hero-salon.jpg";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useRole, useSession } from "@/hooks/use-auth";
 import {
   Accordion,
   AccordionContent,
@@ -83,6 +86,19 @@ const faqs = [
 ];
 
 function Landing() {
+  const navigate = useNavigate();
+  const { user, loading } = useSession();
+  const roleQ = useRole(user?.id);
+
+  useEffect(() => {
+    if (loading || !user || roleQ.isLoading) return;
+    if (roleQ.data === "super_admin") navigate({ to: "/super-admin" });
+    else if (roleQ.data === "owner") navigate({ to: "/dashboard" });
+    else navigate({ to: "/prenotazioni" });
+  }, [loading, user, roleQ.isLoading, roleQ.data, navigate]);
+
+  if (user || loading) return null;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
