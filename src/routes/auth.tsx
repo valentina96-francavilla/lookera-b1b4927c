@@ -135,7 +135,7 @@ function AuthPage() {
       );
       return;
     }
-    toast.success("Controlla la tua email per confermare la registrazione.", { duration: 8000 });
+    toast.success("Registrazione completata. Controlla la tua email per confermare la registrazione.", { duration: 12000 });
     return;
   }
 
