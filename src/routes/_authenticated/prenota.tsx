@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/prenota")({
   component: BookAppointmentRoute,
@@ -100,7 +101,7 @@ function BookAppointmentRoute() {
           <div className="grid gap-4 md:grid-cols-3">
             <Filter label="Regione" value={region} onChange={changeRegion} options={regions} />
             <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region} />
-            <Filter label="Città" value={city} onChange={setCity} options={cities} disabled={!province} />
+            <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province} />
           </div>
         </div>
 
@@ -131,7 +132,16 @@ function BookAppointmentRoute() {
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {filtered.map((salon) => (
-                  <div key={salon.id} className="surface p-5">
+                  <div
+                    key={salon.id}
+                    className={cn(
+                      "surface cursor-pointer p-5 transition-all",
+                      selectedSalonId === salon.id
+                        ? "ring-2 ring-primary"
+                        : "hover:ring-1 hover:ring-primary/40",
+                    )}
+                    onClick={() => setSelectedSalonId(salon.id)}
+                  >
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="font-semibold">{salon.name}</h3>
@@ -141,7 +151,7 @@ function BookAppointmentRoute() {
                       </div>
                       <MapPin className="h-5 w-5 shrink-0 text-primary" />
                     </div>
-                    <Button asChild className="mt-4">
+                    <Button asChild className="mt-4" onClick={(e) => e.stopPropagation()}>
                       <Link to="/salon/$slug" params={{ slug: salon.slug }}>
                         Seleziona centro <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
