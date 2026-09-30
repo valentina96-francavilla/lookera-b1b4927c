@@ -288,7 +288,7 @@ function UsersPage() {
         <div className="surface p-5">
           <div className="mb-4">
             <h2 className="font-semibold">
-              Nuovo utente
+              Nuovo cliente
             </h2>
 
             <p className="text-sm text-muted-foreground">
