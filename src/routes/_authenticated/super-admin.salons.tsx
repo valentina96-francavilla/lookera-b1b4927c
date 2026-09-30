@@ -86,6 +86,8 @@ const emptyForm: SalonForm = {
   activity_type: "Parrucchiere",
 };
 
+const REGIONS = ["Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna","Friuli-Venezia Giulia","Lazio","Liguria","Lombardia","Marche","Molise","Piemonte","Puglia","Sardegna","Sicilia","Toscana","Trentino-Alto Adige","Umbria","Valle d'Aosta","Veneto"];
+
 function SalonsPage() {
   const queryClient = useQueryClient();
 
@@ -711,6 +713,7 @@ async function geocodeSalonAddress(form: SalonForm) {
                   Indirizzo
                 </label>
                 <Input
+                  autoComplete="street-address"
                   value={form.address}
                   onChange={(e) =>
                     setForm((f) => ({
@@ -736,6 +739,7 @@ async function geocodeSalonAddress(form: SalonForm) {
                 </div>
               </div>
 
+              <datalist id="lookera-regions">{REGIONS.map((r) => <option key={r} value={r} />)}</datalist>
               <input type="hidden" value={form.latitude} readOnly />
               <input type="hidden" value={form.longitude} readOnly />
 
