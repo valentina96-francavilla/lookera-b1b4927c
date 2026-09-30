@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { WEEKDAYS, hhmm } from "@/lib/lookera";
-import { Trash2, MapPin } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { SalonImageUpload } from "@/components/salon-image-upload";
 
 export const Route = createFileRoute("/_authenticated/orari")({
   component: HoursRoute,
@@ -169,6 +170,7 @@ function HoursContent({ salon }: { salon: Salon }) {
       city: string;
       latitude: string;
       longitude: string;
+      activity_type: string;
     }) => {
       const { error } = await supabase
         .from("salons")
@@ -185,6 +187,7 @@ function HoursContent({ salon }: { salon: Salon }) {
           city: input.city || null,
           latitude: input.latitude ? Number(input.latitude) : null,
           longitude: input.longitude ? Number(input.longitude) : null,
+          activity_type: input.activity_type,
         })
         .eq("id", salon.id);
       if (error) throw error;
@@ -209,8 +212,20 @@ function HoursContent({ salon }: { salon: Salon }) {
             const region = String(f.get("region") ?? "").trim();
             const province = String(f.get("province") ?? "").trim();
             const city = String(f.get("city") ?? "").trim();
+            const address = String(f.get("address") ?? "").trim();
+            const region = String(f.get("region") ?? "").trim();
+            const province = String(f.get("province") ?? "").trim();
 
-            saveSalon.mutate({
+            void (async () => {
+              let latitude = String(f.get("latitude") ?? "").trim();
+              let longitude = String(f.get("longitude") ?? "").trim();
+              if (address && city) {
+                const geo = await geocodeAddress({ address, city, province, region });
+                latitude = String(geo.latitude);
+                longitude = String(geo.longitude);
+              }
+
+              saveSalon.mutate({
               name: String(f.get("name") ?? "").trim(),
               description: String(f.get("description") ?? "").trim(),
               address: String(f.get("address") ?? "").trim(),
@@ -222,13 +237,24 @@ function HoursContent({ salon }: { salon: Salon }) {
               province: String(f.get("province") ?? "").trim(),
               city: String(f.get("city") ?? "").trim(),
               latitude: String(f.get("latitude") ?? "").trim(),
-              longitude: String(f.get("longitude") ?? "").trim(),
+              longitude,
+              activity_type: String(f.get("activity_type") ?? "Parrucchiere"),
             });
+            })().catch((error: any) => toast.error(error?.message ?? "Impossibile trovare la posizione."));
           }}
         >
           <div className="space-y-2">
             <Label htmlFor="s-name">Nome</Label>
             <Input id="s-name" name="name" defaultValue={salon.name} required maxLength={80} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="s-type">Tipologia attività</Label>
+            <select id="s-type" name="activity_type" defaultValue={salon.activity_type ?? "Parrucchiere"} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <option>Salone di bellezza</option>
+              <option>Centro estetico</option>
+              <option>Parrucchiere</option>
+              <option>Barbiere</option>
+            </select>
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-address">Indirizzo</Label>
@@ -246,14 +272,8 @@ function HoursContent({ salon }: { salon: Salon }) {
             <Label htmlFor="s-city">Città</Label>
             <Input id="s-city" name="city" defaultValue={salon.city ?? ""} placeholder="es. Roma" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="s-latitude">Latitudine</Label>
-            <Input id="s-latitude" name="latitude" type="number" step="any" defaultValue={salon.latitude ?? ""} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="s-longitude">Longitudine</Label>
-            <Input id="s-longitude" name="longitude" type="number" step="any" defaultValue={salon.longitude ?? ""} />
-          </div>
+          <input type="hidden" name="latitude" defaultValue={salon.latitude ?? ""} />
+          <input type="hidden" name="longitude" defaultValue={salon.longitude ?? ""} />
           <div className="space-y-2">
             <Label htmlFor="s-phone">Telefono</Label>
             <Input id="s-phone" name="phone" defaultValue={salon.phone ?? ""} />
@@ -262,10 +282,11 @@ function HoursContent({ salon }: { salon: Salon }) {
             <Label htmlFor="s-email">Email</Label>
             <Input id="s-email" name="email" type="email" defaultValue={salon.email ?? ""} />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="s-image">URL foto/logo</Label>
-            <Input id="s-image" name="image_url" defaultValue={salon.image_url ?? ""} />
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Immagine</Label>
+            <SalonImageUpload salonId={salon.id} value={salon.image_url ?? ""} onChange={() => void qc.invalidateQueries({ queryKey: ["my-salon"] })} />
           </div>
+          <input type="hidden" name="image_url" value={salon.image_url ?? ""} readOnly />
           <div className="space-y-2">
             <Label htmlFor="s-cancel">Ore minime per annullare</Label>
             <Input
