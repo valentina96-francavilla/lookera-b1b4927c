@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const ownerNav = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Profilo negozio", icon: LayoutDashboard },
   { to: "/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/servizi", label: "Servizi", icon: Scissors },
   { to: "/orari", label: "Orari", icon: Clock },
@@ -14,7 +14,10 @@ const ownerNav = [
   { to: "/recensioni", label: "Recensioni", icon: Star },
 ];
 
-const clientNav = [{ to: "/prenotazioni", label: "Le mie prenotazioni", icon: CalendarDays }];
+const clientNav = [
+  { to: "/prenotazioni", label: "Le mie prenotazioni", icon: CalendarDays },
+  { to: "/prenota", label: "Prenota appuntamento", icon: CalendarDays },
+];
 
 export function AppShell({
   role,
