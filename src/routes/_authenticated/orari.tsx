@@ -150,6 +150,11 @@ function HoursContent({ salon }: { salon: Salon }) {
       email: string;
       image_url: string;
       cancellation_hours: number;
+      region: string;
+      province: string;
+      city: string;
+      latitude: string;
+      longitude: string;
     }) => {
       const { error } = await supabase
         .from("salons")
@@ -161,6 +166,11 @@ function HoursContent({ salon }: { salon: Salon }) {
           email: input.email || null,
           image_url: input.image_url || null,
           cancellation_hours: input.cancellation_hours,
+          region: input.region || null,
+          province: input.province || null,
+          city: input.city || null,
+          latitude: input.latitude ? Number(input.latitude) : null,
+          longitude: input.longitude ? Number(input.longitude) : null,
         })
         .eq("id", salon.id);
       if (error) throw error;
@@ -189,6 +199,11 @@ function HoursContent({ salon }: { salon: Salon }) {
               email: String(f.get("email") ?? "").trim(),
               image_url: String(f.get("image_url") ?? "").trim(),
               cancellation_hours: Number(f.get("cancellation_hours") ?? 24),
+              region: String(f.get("region") ?? "").trim(),
+              province: String(f.get("province") ?? "").trim(),
+              city: String(f.get("city") ?? "").trim(),
+              latitude: String(f.get("latitude") ?? "").trim(),
+              longitude: String(f.get("longitude") ?? "").trim(),
             });
           }}
         >
