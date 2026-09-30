@@ -21,6 +21,7 @@ type Salon = {
   region: string | null;
   province: string | null;
   city: string | null;
+  activity_type: string | null;
   latitude: number | null;
   longitude: number | null;
 };
@@ -29,6 +30,7 @@ function BookAppointmentRoute() {
   const [region, setRegion] = useState("");
   const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
+  const [activityType, setActivityType] = useState("");
   const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
 
   const salonsQ = useQuery({
@@ -36,7 +38,7 @@ function BookAppointmentRoute() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("salons")
-        .select("id,name,slug,address,phone,email,region,province,city,latitude,longitude")
+        .select("id,name,slug,address,phone,email,region,province,city,activity_type,latitude,longitude")
         .order("name");
       if (error) throw error;
       return (data ?? []) as Salon[];
@@ -44,6 +46,7 @@ function BookAppointmentRoute() {
   });
 
   const salons = salonsQ.data ?? [];
+  const activityTypes = ["Salone di bellezza", "Centro estetico", "Parrucchiere", "Barbiere"];
   const regions = useMemo(
     () => [...new Set(salons.map((s) => s.region).filter(Boolean))].sort(),
     [salons],
@@ -73,7 +76,8 @@ function BookAppointmentRoute() {
     (s) =>
       (!region || s.region === region) &&
       (!province || s.province === province) &&
-      (!city || s.city === city),
+      (!city || s.city === city) &&
+      (!activityType || s.activity_type === activityType),
   );
 
   function changeRegion(value: string) {
@@ -98,10 +102,11 @@ function BookAppointmentRoute() {
     <AppShell role="client" title="Prenota appuntamento" subtitle="Trova il centro più comodo per te">
       <div className="space-y-6">
         <div className="surface p-5">
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <Filter label="Regione" value={region} onChange={changeRegion} options={regions} />
             <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region} />
             <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province} />
+            <Filter label="Tipologia attività" value={activityType} onChange={setActivityType} options={activityTypes} />
           </div>
         </div>
 
