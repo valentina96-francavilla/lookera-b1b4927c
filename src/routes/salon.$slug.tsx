@@ -43,7 +43,6 @@ type Service = {
 
 function PublicSalonPage() {
   const { slug } = Route.useParams();
-  const navigate = useNavigate();
   const { user } = useSession();
 
   const salonQ = useQuery({
@@ -144,17 +143,12 @@ function PublicSalonPage() {
 
   async function submitBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!user) {
-      toast.error("Accedi per confermare la prenotazione");
-      navigate({ to: "/auth" });
-      return;
-    }
     if (!service || !date || !slot) return;
     const f = new FormData(e.currentTarget);
     setSubmitting(true);
     const { error } = await supabase.from("appointments").insert({
       salon_id: salon!.id,
-      client_id: user.id,
+      client_id: user?.id ?? null,
       service_id: service.id,
       appointment_date: date,
       start_time: hhmm(slot),
@@ -335,15 +329,6 @@ function PublicSalonPage() {
               <p className="text-sm text-muted-foreground">
                 {service.name} · {formatDateIt(date)} · {hhmm(slot)} · {euro(service.price)}
               </p>
-              {!user && (
-                <p className="rounded-lg bg-muted p-3 text-sm">
-                  Per confermare devi{" "}
-                  <Link to="/auth" className="text-primary underline">
-                    accedere o creare un account
-                  </Link>
-                  .
-                </p>
-              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="b-name">Nome e cognome</Label>
@@ -368,7 +353,7 @@ function PublicSalonPage() {
                   <Textarea id="b-notes" name="notes" rows={2} maxLength={300} />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting || !user}>
+              <Button type="submit" className="w-full" disabled={submitting}>
                 Conferma prenotazione
               </Button>
             </form>
