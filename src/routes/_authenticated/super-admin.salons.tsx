@@ -104,6 +104,7 @@ function SalonsPage() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<SalonForm>(emptyForm);
+  const [initialLocation, setInitialLocation] = useState({ address: "", region: "", province: "", city: "" });
 
   const [provinceOptions, setProvinceOptions] = useState<string[]>([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
@@ -194,6 +195,7 @@ function SalonsPage() {
   function startCreate() {
     setEditingId("new");
     setForm(emptyForm);
+    setInitialLocation({ address: "", region: "", province: "", city: "" });
     setServiceEditingId(null);
     setServiceForm({
       name: "",
@@ -223,6 +225,12 @@ function SalonsPage() {
       latitude: salon.latitude != null ? String(salon.latitude) : "",
       longitude: salon.longitude != null ? String(salon.longitude) : "",
       activity_type: salon.activity_type ?? "Parrucchiere",
+    });
+    setInitialLocation({
+      address: salon.address ?? "",
+      region: salon.region ?? "",
+      province: salon.province ?? "",
+      city: salon.city ?? "",
     });
 
     setServiceEditingId(null);
@@ -353,7 +361,14 @@ async function geocodeSalonAddress(form: SalonForm) {
       let latitude = form.latitude.trim();
       let longitude = form.longitude.trim();
 
-      if (form.address.trim() && form.city.trim()) {
+      const locationChanged =
+        editingId === "new" ||
+        form.address.trim() !== initialLocation.address.trim() ||
+        form.region.trim() !== initialLocation.region.trim() ||
+        form.province.trim() !== initialLocation.province.trim() ||
+        form.city.trim() !== initialLocation.city.trim();
+
+      if (locationChanged && form.address.trim() && form.city.trim()) {
         const geo = await geocodeSalonAddress(form);
         latitude = geo.latitude;
         longitude = geo.longitude;
