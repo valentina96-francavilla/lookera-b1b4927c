@@ -79,6 +79,7 @@ function BookAppointmentRoute() {
     setRegion(value);
     setProvince("");
     setCity("");
+    setSelectedSalonId(null);
   }
 
   function changeProvince(value: string) {
