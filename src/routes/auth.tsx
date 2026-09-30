@@ -44,7 +44,19 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session) {
+        const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
+        if (isSuperAdmin === true) {
+          navigate({ to: "/super-admin" });
+          return;
+        }
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.session.user.id);
+        const roles = (roleRows ?? []).map((r) => r.role);
+        navigate({ to: roles.includes("owner") ? "/dashboard" : "/prenotazioni" });
+      }
     });
   }, [navigate]);
 
@@ -65,7 +77,23 @@ function AuthPage() {
       );
       return;
     }
-    navigate({ to: "/dashboard" });
+    const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
+    if (isSuperAdmin === true) {
+      navigate({ to: "/super-admin" });
+      return;
+    }
+
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
+
+    const roles = (roleRows ?? []).map((r) => r.role);
+    if (roles.includes("owner")) {
+      navigate({ to: "/dashboard" });
+    } else {
+      navigate({ to: "/prenotazioni" });
+    }
   }
 
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
@@ -103,8 +131,8 @@ function AuthPage() {
       );
       return;
     }
-    toast.success("Account creato! Benvenuta in LookEra.");
-    navigate({ to: "/dashboard" });
+    toast.success("Controlla la tua email per confermare la registrazione.", { duration: 8000 });
+    return;
   }
 
   return (
