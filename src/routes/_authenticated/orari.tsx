@@ -199,6 +199,8 @@ function HoursContent({ salon }: { salon: Salon }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const regions = ["Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna","Friuli-Venezia Giulia","Lazio","Liguria","Lombardia","Marche","Molise","Piemonte","Puglia","Sardegna","Sicilia","Toscana","Trentino-Alto Adige","Umbria","Valle d'Aosta","Veneto"];
+
   return (
     <div className="space-y-8">
       <section className="surface p-6">
@@ -255,20 +257,21 @@ function HoursContent({ salon }: { salon: Salon }) {
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-address">Indirizzo</Label>
-            <Input id="s-address" name="address" defaultValue={salon.address ?? ""} placeholder="Via, numero civico" />
+            <Input id="s-address" name="address" autoComplete="street-address" defaultValue={salon.address ?? ""} placeholder="Via, numero civico" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-region">Regione</Label>
-            <Input id="s-region" name="region" defaultValue={salon.region ?? ""} placeholder="es. Lazio" />
+            <Input id="s-region" name="region" list="lookera-regions" autoComplete="address-level1" defaultValue={salon.region ?? ""} placeholder="es. Lazio" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-province">Provincia</Label>
-            <Input id="s-province" name="province" defaultValue={salon.province ?? ""} placeholder="es. Roma" />
+            <Input id="s-province" name="province" autoComplete="address-level2" defaultValue={salon.province ?? ""} placeholder="es. Roma" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-city">Città</Label>
-            <Input id="s-city" name="city" defaultValue={salon.city ?? ""} placeholder="es. Roma" />
+            <Input id="s-city" name="city" autoComplete="address-level3" defaultValue={salon.city ?? ""} placeholder="es. Roma" />
           </div>
+          <datalist id="lookera-regions">{regions.map((r) => <option key={r} value={r} />)}</datalist>
           <input type="hidden" name="latitude" defaultValue={salon.latitude ?? ""} />
           <input type="hidden" name="longitude" defaultValue={salon.longitude ?? ""} />
           <div className="space-y-2">
