@@ -19,6 +19,7 @@ export type Salon = {
   city: string | null;
   latitude: number | null;
   longitude: number | null;
+  activity_type: "Salone di bellezza" | "Centro estetico" | "Parrucchiere" | "Barbiere" | null;
 };
 
 export function OwnerPage({
