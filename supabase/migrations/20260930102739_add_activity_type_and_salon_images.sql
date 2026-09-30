@@ -9,6 +9,9 @@ alter table public.salons
   alter column activity_type set default 'Parrucchiere';
 
 alter table public.salons
+  drop constraint if exists salons_activity_type_check;
+
+alter table public.salons
   add constraint salons_activity_type_check
   check (activity_type in ('Salone di bellezza','Centro estetico','Parrucchiere','Barbiere'));
 
