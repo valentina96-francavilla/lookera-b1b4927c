@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { WEEKDAYS, hhmm } from "@/lib/lookera";
 import { Trash2 } from "lucide-react";
 import { SalonImageUpload } from "@/components/salon-image-upload";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { ITALIAN_REGIONS, fetchCities, fetchProvinces } from "@/lib/italian-territories";
 
 export const Route = createFileRoute("/_authenticated/orari")({
@@ -52,6 +53,54 @@ async function geocodeAddress(input: {
   return data as { latitude: number; longitude: number; display_name: string };
 }
 
+function AddressField({
+  salonAddress,
+  city,
+  province,
+  region,
+  onSelected,
+}: {
+  salonAddress: string;
+  city: string;
+  province: string;
+  region: string;
+  onSelected: React.Dispatch<React.SetStateAction<{
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | null>>;
+}) {
+  const [address, setAddress] = useState(salonAddress);
+
+  useEffect(() => {
+    setAddress(salonAddress);
+  }, [salonAddress]);
+
+  return (
+    <div>
+      <AddressAutocomplete
+      value={address}
+      city={city}
+      province={province}
+      region={region}
+      onChange={(next) => {
+        setAddress(next);
+        onSelected(null);
+      }}
+      onSelect={(suggestion) => {
+        setAddress(suggestion.address);
+        onSelected({
+          address: suggestion.address,
+          latitude: suggestion.latitude,
+          longitude: suggestion.longitude,
+        });
+      }}
+      />
+      <input type="hidden" name="address" value={address} readOnly />
+    </div>
+  );
+}
+
 function HoursContent({ salon }: { salon: Salon }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<HourRow[]>([]);
@@ -61,6 +110,19 @@ function HoursContent({ salon }: { salon: Salon }) {
   const [provinceOptions, setProvinceOptions] = useState<string[]>([]);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [territoryLoading, setTerritoryLoading] = useState(false);
+  const [selectedAddressCoordinates, setSelectedAddressCoordinates] = useState<{
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | null>(
+    salon.latitude != null && salon.longitude != null && salon.address
+      ? {
+          address: salon.address,
+          latitude: Number(salon.latitude),
+          longitude: Number(salon.longitude),
+        }
+      : null,
+  );
 
   useEffect(() => {
     if (!region) {
@@ -253,9 +315,17 @@ function HoursContent({ salon }: { salon: Salon }) {
               let latitude = String(f.get("latitude") ?? "").trim();
               let longitude = String(f.get("longitude") ?? "").trim();
               if (address && city) {
-                const geo = await geocodeAddress({ address, city, province, region });
-                latitude = String(geo.latitude);
-                longitude = String(geo.longitude);
+                if (
+                  selectedAddressCoordinates &&
+                  selectedAddressCoordinates.address === address
+                ) {
+                  latitude = String(selectedAddressCoordinates.latitude);
+                  longitude = String(selectedAddressCoordinates.longitude);
+                } else {
+                  const geo = await geocodeAddress({ address, city, province, region });
+                  latitude = String(geo.latitude);
+                  longitude = String(geo.longitude);
+                }
               }
 
               saveSalon.mutate({
@@ -291,19 +361,19 @@ function HoursContent({ salon }: { salon: Salon }) {
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="s-address">Indirizzo</Label>
-            <Input id="s-address" name="address" autoComplete="street-address" defaultValue={salon.address ?? ""} placeholder="Via, numero civico" />
+            <AddressField salonAddress={salon.address ?? ""} city={city} province={province} region={region} onSelected={setSelectedAddressCoordinates} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-region">Regione</Label>
-            <select id="s-region" name="region" value={region} onChange={(e) => { setRegion(e.target.value); setProvince(""); setCity(""); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona regione</option>{ITALIAN_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}</select>
+            <select id="s-region" name="region" value={region} onChange={(e) => { setRegion(e.target.value); setProvince(""); setCity(""); setSelectedAddressCoordinates(null); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona regione</option>{ITALIAN_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}</select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-province">Provincia</Label>
-            <select id="s-province" name="province" value={province} disabled={!region || territoryLoading} onChange={(e) => { setProvince(e.target.value); setCity(""); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona provincia</option>{provinceOptions.map((p) => <option key={p} value={p}>{p}</option>)}</select>
+            <select id="s-province" name="province" value={province} disabled={!region || territoryLoading} onChange={(e) => { setProvince(e.target.value); setCity(""); setSelectedAddressCoordinates(null); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona provincia</option>{provinceOptions.map((p) => <option key={p} value={p}>{p}</option>)}</select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-city">Città</Label>
-            <select id="s-city" name="city" value={city} disabled={!province || territoryLoading} onChange={(e) => setCity(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona città</option>{cityOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select>
+            <select id="s-city" name="city" value={city} disabled={!province || territoryLoading} onChange={(e) => { setCity(e.target.value); setSelectedAddressCoordinates(null); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona città</option>{cityOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select>
           </div>
           <input type="hidden" name="latitude" defaultValue={salon.latitude ?? ""} />
           <input type="hidden" name="longitude" defaultValue={salon.longitude ?? ""} />
