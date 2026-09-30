@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { WEEKDAYS, hhmm } from "@/lib/lookera";
 import { Trash2 } from "lucide-react";
 import { SalonImageUpload } from "@/components/salon-image-upload";
+import { ITALIAN_REGIONS, fetchCities, fetchProvinces } from "@/lib/italian-territories";
 
 export const Route = createFileRoute("/_authenticated/orari")({
   component: HoursRoute,
@@ -54,6 +55,41 @@ async function geocodeAddress(input: {
 function HoursContent({ salon }: { salon: Salon }) {
   const qc = useQueryClient();
   const [rows, setRows] = useState<HourRow[]>([]);
+  const [region, setRegion] = useState(salon.region ?? "");
+  const [province, setProvince] = useState(salon.province ?? "");
+  const [city, setCity] = useState(salon.city ?? "");
+  const [provinceOptions, setProvinceOptions] = useState<string[]>([]);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [territoryLoading, setTerritoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (!region) {
+      setProvinceOptions([]);
+      setCityOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setTerritoryLoading(true);
+    fetchProvinces(region)
+      .then((items) => { if (!cancelled) setProvinceOptions(items); })
+      .catch(() => { if (!cancelled) setProvinceOptions([]); })
+      .finally(() => { if (!cancelled) setTerritoryLoading(false); });
+    return () => { cancelled = true; };
+  }, [region]);
+
+  useEffect(() => {
+    if (!province) {
+      setCityOptions([]);
+      return;
+    }
+    let cancelled = false;
+    setTerritoryLoading(true);
+    fetchCities(province)
+      .then((items) => { if (!cancelled) setCityOptions(items); })
+      .catch(() => { if (!cancelled) setCityOptions([]); })
+      .finally(() => { if (!cancelled) setTerritoryLoading(false); });
+    return () => { cancelled = true; };
+  }, [province]);
 
   const hoursQ = useQuery({
     queryKey: ["hours", salon.id],
@@ -199,8 +235,6 @@ function HoursContent({ salon }: { salon: Salon }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const regions = ["Abruzzo","Basilicata","Calabria","Campania","Emilia-Romagna","Friuli-Venezia Giulia","Lazio","Liguria","Lombardia","Marche","Molise","Piemonte","Puglia","Sardegna","Sicilia","Toscana","Trentino-Alto Adige","Umbria","Valle d'Aosta","Veneto"];
-
   return (
     <div className="space-y-8">
       <section className="surface p-6">
@@ -261,17 +295,16 @@ function HoursContent({ salon }: { salon: Salon }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-region">Regione</Label>
-            <Input id="s-region" name="region" list="lookera-regions" autoComplete="address-level1" defaultValue={salon.region ?? ""} placeholder="es. Lazio" />
+            <select id="s-region" name="region" value={region} onChange={(e) => { setRegion(e.target.value); setProvince(""); setCity(""); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona regione</option>{ITALIAN_REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}</select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-province">Provincia</Label>
-            <Input id="s-province" name="province" autoComplete="address-level2" defaultValue={salon.province ?? ""} placeholder="es. Roma" />
+            <select id="s-province" name="province" value={province} disabled={!region || territoryLoading} onChange={(e) => { setProvince(e.target.value); setCity(""); }} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona provincia</option>{provinceOptions.map((p) => <option key={p} value={p}>{p}</option>)}</select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="s-city">Città</Label>
-            <Input id="s-city" name="city" autoComplete="address-level3" defaultValue={salon.city ?? ""} placeholder="es. Roma" />
+            <select id="s-city" name="city" value={city} disabled={!province || territoryLoading} onChange={(e) => setCity(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"><option value="">Seleziona città</option>{cityOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select>
           </div>
-          <datalist id="lookera-regions">{regions.map((r) => <option key={r} value={r} />)}</datalist>
           <input type="hidden" name="latitude" defaultValue={salon.latitude ?? ""} />
           <input type="hidden" name="longitude" defaultValue={salon.longitude ?? ""} />
           <div className="space-y-2">
