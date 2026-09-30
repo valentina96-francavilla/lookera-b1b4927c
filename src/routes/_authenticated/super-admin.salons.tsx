@@ -341,6 +341,7 @@ async function geocodeSalonAddress(form: SalonForm) {
         city: form.city.trim() || null,
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
+        activity_type: form.activity_type || "Parrucchiere",
       };
 
       if (editingId === "new") {
