@@ -43,21 +43,25 @@ function AuthPage() {
   const [tab, setTab] = useState("login");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
-        if (isSuperAdmin === true) {
-          navigate({ to: "/super-admin" });
-          return;
-        }
-        const { data: roleRows } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.session.user.id);
-        const roles = (roleRows ?? []).map((r) => r.role);
-        navigate({ to: roles.includes("owner") ? "/dashboard" : "/prenotazioni" });
+    async function redirectIfAuthenticated() {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return;
+
+      const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
+      if (isSuperAdmin === true) {
+        navigate({ to: "/super-admin" });
+        return;
       }
-    });
+
+      const { data: roleRows } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.session.user.id);
+      const roles = (roleRows ?? []).map((r) => r.role);
+      navigate({ to: roles.includes("owner") ? "/dashboard" : "/prenotazioni" });
+    }
+
+    void redirectIfAuthenticated();
   }, [navigate]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
@@ -114,7 +118,7 @@ function AuthPage() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth`,
         data: {
           full_name: parsed.data.fullName,
           phone: parsed.data.phone,
