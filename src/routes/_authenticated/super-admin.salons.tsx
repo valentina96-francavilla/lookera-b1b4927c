@@ -59,6 +59,11 @@ type SalonForm = {
   email: string;
   image_url: string;
   cancellation_hours: number;
+  region: string;
+  province: string;
+  city: string;
+  latitude: string;
+  longitude: string;
 };
 
 const emptyForm: SalonForm = {
@@ -71,6 +76,11 @@ const emptyForm: SalonForm = {
   email: "",
   image_url: "",
   cancellation_hours: 24,
+  region: "",
+  province: "",
+  city: "",
+  latitude: "",
+  longitude: "",
 };
 
 function SalonsPage() {
@@ -169,6 +179,11 @@ function SalonsPage() {
       email: salon.email ?? "",
       image_url: salon.image_url ?? "",
       cancellation_hours: salon.cancellation_hours ?? 24,
+      region: salon.region ?? "",
+      province: salon.province ?? "",
+      city: salon.city ?? "",
+      latitude: salon.latitude != null ? String(salon.latitude) : "",
+      longitude: salon.longitude != null ? String(salon.longitude) : "",
     });
 
     setServiceEditingId(null);
