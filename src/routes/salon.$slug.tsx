@@ -134,7 +134,7 @@ function PublicSalonPage() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
         <h1 className="text-2xl">Salone non trovato</h1>
-        <Link to="/" className="text-primary underline">
+        <Link to="/index2" className="text-primary underline">
           Torna alla home
         </Link>
       </div>
@@ -157,7 +157,7 @@ function PublicSalonPage() {
     <div className="min-h-screen bg-background pb-16">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Link to="/index2" className="flex items-center gap-2 text-sm text-muted-foreground">
             <ArrowLeft className="h-4 w-4" /> LookEra
           </Link>
           {user ? (
