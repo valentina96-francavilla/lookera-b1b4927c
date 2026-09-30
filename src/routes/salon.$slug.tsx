@@ -152,7 +152,6 @@ function PublicSalonPage() {
     }, 500);
   }
 
-  const today = toDateKey(new Date());
   const availableDays = Array.from({ length: 60 }, (_, i) => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
