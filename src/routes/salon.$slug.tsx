@@ -142,14 +142,44 @@ function PublicSalonPage() {
     );
   }
 
-  function submitBooking(e: React.FormEvent<HTMLFormElement>) {
+  async function submitBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!service || !date || !slot) return;
+    if (!user) {
+      toast.error("Accedi o registrati per prenotare.");
+      return;
+    }
+    if (!service || !date || !slot || !salon) return;
+
+    const form = new FormData(e.currentTarget);
+    const customerName = String(form.get("name") ?? "").trim();
+    const customerEmail = String(form.get("email") ?? "").trim();
+    const customerPhone = String(form.get("phone") ?? "").trim();
+    const notes = String(form.get("notes") ?? "").trim();
+
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from("appointments").insert({
+        salon_id: salon.id,
+        client_id: user.id,
+        service_id: service.id,
+        appointment_date: date,
+        start_time: hhmm(slot),
+        end_time: addMinutesToTime(slot, service.duration_min),
+        status: "pending",
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: customerPhone,
+        notes,
+      });
+      if (error) throw error;
+
+      toast.success("Prenotazione inviata!");
+      window.location.href = "/prenotazioni";
+    } catch (error: any) {
+      toast.error(error?.message ?? "Non è stato possibile creare la prenotazione. Riprova.");
+    } finally {
       setSubmitting(false);
-      toast.success("Demo completata! Nessun appuntamento è stato creato.");
-    }, 500);
+    }
   }
 
   const availableDays = Array.from({ length: 60 }, (_, i) => {
@@ -351,7 +381,7 @@ function PublicSalonPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="b-name">Nome e cognome</Label>
-                  <Input id="b-name" name="name" required maxLength={80} />
+                  <Input id="b-name" name="name" required maxLength={80} defaultValue={String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? "")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="b-email">Email</Label>
@@ -372,7 +402,7 @@ function PublicSalonPage() {
                   <Textarea id="b-notes" name="notes" rows={2} maxLength={300} />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
+              <Button type="submit" className="w-full" disabled={submitting || !user}>
                 Conferma prenotazione
               </Button>
             </form>
