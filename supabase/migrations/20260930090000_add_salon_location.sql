@@ -14,3 +14,11 @@ create index if not exists idx_salons_city
 
 -- Super-admin must be able to create/manage clients through the existing admin edge function.
 -- Existing RLS remains unchanged because the edge function uses the service role.
+
+update public.salons
+set region = 'Lombardia',
+    province = 'Milano',
+    city = 'Milano',
+    latitude = 45.4642,
+    longitude = 9.1900
+where slug = 'studio-beauty';
