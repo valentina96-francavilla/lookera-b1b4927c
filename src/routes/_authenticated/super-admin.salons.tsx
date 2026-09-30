@@ -26,6 +26,7 @@ import {
 } from "@/lib/super-admin";
 
 import { supabase } from "@/integrations/supabase/client";
+import { SalonImageUpload } from "@/components/salon-image-upload";
 
 export const Route = createFileRoute("/_authenticated/super-admin/salons")({
   component: SalonsPage,
@@ -64,6 +65,7 @@ type SalonForm = {
   city: string;
   latitude: string;
   longitude: string;
+  activity_type: string;
 };
 
 const emptyForm: SalonForm = {
@@ -81,6 +83,7 @@ const emptyForm: SalonForm = {
   city: "",
   latitude: "",
   longitude: "",
+  activity_type: "Parrucchiere",
 };
 
 function SalonsPage() {
@@ -184,6 +187,7 @@ function SalonsPage() {
       city: salon.city ?? "",
       latitude: salon.latitude != null ? String(salon.latitude) : "",
       longitude: salon.longitude != null ? String(salon.longitude) : "",
+      activity_type: salon.activity_type ?? "Parrucchiere",
     });
 
     setServiceEditingId(null);
@@ -671,6 +675,22 @@ async function geocodeSalonAddress(form: SalonForm) {
                 />
               </div>
 
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Tipologia attività
+                </label>
+                <select
+                  value={form.activity_type}
+                  onChange={(e) => setForm((f) => ({ ...f, activity_type: e.target.value }))}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option>Salone di bellezza</option>
+                  <option>Centro estetico</option>
+                  <option>Parrucchiere</option>
+                  <option>Barbiere</option>
+                </select>
+              </div>
+
               <div className="md:col-span-2">
                 <label className="mb-1 block text-sm font-medium">
                   Descrizione
@@ -716,16 +736,8 @@ async function geocodeSalonAddress(form: SalonForm) {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Latitudine</label>
-                  <Input type="number" step="any" value={form.latitude} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Longitudine</label>
-                  <Input type="number" step="any" value={form.longitude} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} />
-                </div>
-              </div>
+              <input type="hidden" value={form.latitude} readOnly />
+              <input type="hidden" value={form.longitude} readOnly />
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
@@ -758,20 +770,16 @@ async function geocodeSalonAddress(form: SalonForm) {
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  URL immagine
-                </label>
-                <Input
-                  value={form.image_url}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      image_url: e.target.value,
-                    }))
-                  }
-                />
-              </div>
+              {editingId !== "new" && (
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-medium">Immagine</label>
+                  <SalonImageUpload
+                    salonId={editingId}
+                    value={form.image_url}
+                    onChange={(url) => setForm((f) => ({ ...f, image_url: url }))}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
