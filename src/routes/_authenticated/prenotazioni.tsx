@@ -20,6 +20,13 @@ import {
   toDateKey,
 } from "@/lib/lookera";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/prenotazioni")({
   component: MyBookingsRoute,
@@ -42,6 +49,7 @@ function MyBookingsRoute() {
   const qc = useQueryClient();
   const [reviewFor, setReviewFor] = useState<Row | null>(null);
   const [rating, setRating] = useState(5);
+  const [cancelFor, setCancelFor] = useState<Row | null>(null);
 
   const q = useQuery({
     queryKey: ["my-appointments", user?.id],
@@ -159,7 +167,14 @@ function MyBookingsRoute() {
                       className="mt-3"
                       size="sm"
                       variant="outline"
-                      onClick={() => cancel.mutate(r)}
+                      onClick={() => {
+                        const limit = r.salons?.cancellation_hours ?? 24;
+                        if (hoursUntil(r.appointment_date, r.start_time) < limit) {
+                          setCancelFor(r);
+                        } else {
+                          cancel.mutate(r);
+                        }
+                      }}
                       disabled={cancel.isPending}
                     >
                       Annulla prenotazione
@@ -255,6 +270,24 @@ function MyBookingsRoute() {
           </section>
         </div>
       )}
+      <Dialog open={!!cancelFor} onOpenChange={(open) => !open && setCancelFor(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Impossibile annullare online</DialogTitle>
+            <DialogDescription>
+              Puoi annullare solo fino a 24 ore prima. Contatta il salone.
+            </DialogDescription>
+          </DialogHeader>
+          {cancelFor?.salons && (
+            <div className="rounded-xl border border-border p-4 text-sm">
+              <p className="font-semibold">{cancelFor.salons.name}</p>
+              <p className="mt-2 text-muted-foreground">
+                Per modificare o annullare questo appuntamento contatta direttamente il salone.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
