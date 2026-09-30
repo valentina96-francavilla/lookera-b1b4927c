@@ -47,29 +47,85 @@ function BookAppointmentRoute() {
 
   const salons = salonsQ.data ?? [];
   const activityTypes = ["Salone di bellezza", "Centro estetico", "Parrucchiere", "Barbiere"];
-  const regions = useMemo(
-    () => [...new Set(salons.map((s) => s.region).filter(Boolean))].sort(),
-    [salons],
-  );
+
+  const regions = [
+    "Abruzzo",
+    "Basilicata",
+    "Calabria",
+    "Campania",
+    "Emilia-Romagna",
+    "Friuli-Venezia Giulia",
+    "Lazio",
+    "Liguria",
+    "Lombardia",
+    "Marche",
+    "Molise",
+    "Piemonte",
+    "Puglia",
+    "Sardegna",
+    "Sicilia",
+    "Toscana",
+    "Trentino-Alto Adige",
+    "Umbria",
+    "Valle d'Aosta",
+    "Veneto",
+  ];
+
+  const [territories, setTerritories] = useState<
+    { nome: string; provincia: string }[]
+  >([]);
+  const [territoriesLoading, setTerritoriesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!region) {
+      setTerritories([]);
+      return;
+    }
+
+    let cancelled = false;
+    setTerritoriesLoading(true);
+
+    fetch(
+      `https://comuni-ita.nicolorebaioli.dev/v5/comuni/${encodeURIComponent(region)}?fields=nome,provincia&sort=nome`,
+    )
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Errore nel caricamento dei comuni");
+        return response.json();
+      })
+      .then((data) => {
+        if (cancelled) return;
+        setTerritories(
+          (Array.isArray(data) ? data : data.data ?? []).map((item: any) => ({
+            nome: item.nome,
+            provincia: item.provincia?.nome ?? item.provincia,
+          })),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setTerritories([]);
+      })
+      .finally(() => {
+        if (!cancelled) setTerritoriesLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [region]);
+
   const provinces = useMemo(
-    () =>
-      [...new Set(
-        salons
-          .filter((s) => !region || s.region === region)
-          .map((s) => s.province)
-          .filter(Boolean),
-      )].sort(),
-    [salons, region],
+    () => [...new Set(territories.map((item) => item.provincia).filter(Boolean))].sort(),
+    [territories],
   );
+
   const cities = useMemo(
     () =>
-      [...new Set(
-        salons
-          .filter((s) => (!region || s.region === region) && (!province || s.province === province))
-          .map((s) => s.city)
-          .filter(Boolean),
-      )].sort(),
-    [salons, region, province],
+      territories
+        .filter((item) => !province || item.provincia === province)
+        .map((item) => item.nome)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b, "it")),
+    [territories, province],
   );
 
   const filtered = salons.filter(
@@ -104,8 +160,8 @@ function BookAppointmentRoute() {
         <div className="surface p-5">
           <div className="grid gap-4 md:grid-cols-4">
             <Filter label="Regione" value={region} onChange={changeRegion} options={regions} />
-            <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region} />
-            <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province} />
+            <Filter label="Provincia" value={province} onChange={changeProvince} options={provinces} disabled={!region || territoriesLoading} />
+            <Filter label="Città" value={city} onChange={changeCity} options={cities} disabled={!province || territoriesLoading} />
             <Filter label="Tipologia attività" value={activityType} onChange={setActivityType} options={activityTypes} />
           </div>
         </div>
