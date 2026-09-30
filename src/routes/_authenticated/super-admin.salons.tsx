@@ -286,6 +286,11 @@ function SalonsPage() {
         email: form.email || null,
         image_url: form.image_url || null,
         cancellation_hours: Number(form.cancellation_hours) || 0,
+        region: form.region.trim() || null,
+        province: form.province.trim() || null,
+        city: form.city.trim() || null,
+        latitude: form.latitude.trim() ? Number(form.latitude) : null,
+        longitude: form.longitude.trim() ? Number(form.longitude) : null,
       };
 
       if (editingId === "new") {
@@ -650,6 +655,32 @@ function SalonsPage() {
                     }))
                   }
                 />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Regione</label>
+                  <Input value={form.region} onChange={(e) => setForm((f) => ({ ...f, region: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Provincia</label>
+                  <Input value={form.province} onChange={(e) => setForm((f) => ({ ...f, province: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Città</label>
+                  <Input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Latitudine</label>
+                  <Input type="number" step="any" value={form.latitude} onChange={(e) => setForm((f) => ({ ...f, latitude: e.target.value }))} />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Longitudine</label>
+                  <Input type="number" step="any" value={form.longitude} onChange={(e) => setForm((f) => ({ ...f, longitude: e.target.value }))} />
+                </div>
               </div>
 
               <div>
