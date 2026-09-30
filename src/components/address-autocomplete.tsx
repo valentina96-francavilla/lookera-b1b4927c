@@ -34,10 +34,6 @@ export function AddressAutocomplete({
   const requestRef = useRef(0);
 
   useEffect(() => {
-    const query = [value.trim(), city, province, region, "Italia"]
-      .filter(Boolean)
-      .join(", ");
-
     if (value.trim().length < 3) {
       setSuggestions([]);
       setOpen(false);
@@ -49,12 +45,6 @@ export function AddressAutocomplete({
       setLoading(true);
 
       try {
-        const url = new URL("https://photon.komoot.io/api/");
-        url.searchParams.set("q", query);
-        url.searchParams.set("limit", "5");
-        url.searchParams.set("lang", "it");
-        url.searchParams.set("countrycode", "IT");
-
         const { data, error } = await supabase.functions.invoke("geocode-address", {
           body: { q: value.trim(), city, province, region },
         });
