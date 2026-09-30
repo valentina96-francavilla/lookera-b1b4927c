@@ -61,7 +61,8 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
     const { error } = await supabase.functions.invoke("send-contact-email", { body: { email, message } });
     setSending(false);
     if (error) {
-      toast.error("Non è stato possibile inviare la richiesta. Riprova tra poco.");
+      console.error("send-contact-email:", error);
+      toast.error(error.message || "Non è stato possibile inviare la richiesta. Riprova tra poco.");
       return;
     }
     toast.success("Richiesta inviata. Ti ricontatteremo presto.");
