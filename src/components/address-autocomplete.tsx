@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 type AddressSuggestion = {
   label: string;
