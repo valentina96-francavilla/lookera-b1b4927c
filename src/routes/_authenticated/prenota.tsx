@@ -28,6 +28,7 @@ function BookAppointmentRoute() {
   const [region, setRegion] = useState("");
   const [province, setProvince] = useState("");
   const [city, setCity] = useState("");
+  const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
 
   const salonsQ = useQuery({
     queryKey: ["booking-salons"],
@@ -83,6 +84,12 @@ function BookAppointmentRoute() {
   function changeProvince(value: string) {
     setProvince(value);
     setCity("");
+    setSelectedSalonId(null);
+  }
+
+  function changeCity(value: string) {
+    setCity(value);
+    setSelectedSalonId(null);
   }
 
   return (
@@ -107,7 +114,13 @@ function BookAppointmentRoute() {
           </div>
         ) : (
           <>
-            <LeafletMap salons={filtered.filter((s) => s.latitude != null && s.longitude != null)} />
+            {city && (
+              <LeafletMap
+                salons={filtered.filter((s) => s.latitude != null && s.longitude != null)}
+                selectedSalonId={selectedSalonId}
+                onSelectSalon={setSelectedSalonId}
+              />
+            )}
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">
@@ -174,7 +187,15 @@ function Filter({
   );
 }
 
-function LeafletMap({ salons }: { salons: Salon[] }) {
+function LeafletMap({
+  salons,
+  selectedSalonId,
+  onSelectSalon,
+}: {
+  salons: Salon[];
+  selectedSalonId: string | null;
+  onSelectSalon: (id: string) => void;
+}) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -219,12 +240,14 @@ function LeafletMap({ salons }: { salons: Salon[] }) {
       marker.bindPopup(
         `<strong>${escapeHtml(salon.name)}</strong><br/>${escapeHtml(salon.address ?? "")}`,
       );
+      marker.on("click", () => onSelectSalon(salon.id));
+      if (selectedSalonId === salon.id) marker.openPopup();
       bounds.extend([salon.latitude, salon.longitude]);
     });
 
     map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
     return () => map.remove();
-  }, [ready, salons]);
+  }, [ready, salons, selectedSalonId, onSelectSalon]);
 
   if (salons.length === 0) return null;
 
@@ -232,7 +255,9 @@ function LeafletMap({ salons }: { salons: Salon[] }) {
     <div className="surface overflow-hidden">
       <div className="border-b border-border px-5 py-4">
         <h2 className="font-semibold">Mappa dei centri</h2>
-        <p className="text-sm text-muted-foreground">Seleziona un Pin per vedere il centro.</p>
+        <p className="text-sm text-muted-foreground">
+          Clicca un Pin per selezionare il centro, oppure scegli un centro dall’elenco.
+        </p>
       </div>
       <div id="lookera-booking-map" className="h-[420px] w-full" />
     </div>
