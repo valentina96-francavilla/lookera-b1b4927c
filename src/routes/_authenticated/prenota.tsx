@@ -65,9 +65,9 @@ function BookAppointmentRoute() {
     "Sardegna",
     "Sicilia",
     "Toscana",
-    "Trentino-Alto Adige",
+    "Trentino-Alto Adige/Südtirol",
     "Umbria",
-    "Valle d'Aosta",
+    "Valle d'Aosta/Vallée d'Aoste",
     "Veneto",
   ];
 
