@@ -58,11 +58,25 @@ function ContactDialog({ open, onClose }: { open: boolean; onClose: () => void }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSending(true);
-    const { error } = await supabase.functions.invoke("send-contact-email", { body: { email, message } });
+    const { data, error } = await supabase.functions.invoke("send-contact-email", { body: { email, message } });
     setSending(false);
     if (error) {
       console.error("send-contact-email:", error);
-      toast.error(error.message || "Non è stato possibile inviare la richiesta. Riprova tra poco.");
+      let detail = error.message;
+      try {
+        const response = (error as { context?: Response }).context;
+        if (response) {
+          const body = await response.clone().json();
+          detail = body?.error || detail;
+        }
+      } catch {
+        // Keep the SDK error message when the response is not JSON.
+      }
+      toast.error(detail || "Non è stato possibile inviare la richiesta. Riprova tra poco.");
+      return;
+    }
+    if (data?.error) {
+      toast.error(data.error);
       return;
     }
     toast.success("Richiesta inviata. Ti ricontatteremo presto.");
