@@ -282,6 +282,26 @@ function SalonsPage() {
     }
   }
   
+async function geocodeSalonAddress(form: SalonForm) {
+  if (!form.address.trim() || !form.city.trim()) {
+    throw new Error("Inserisci almeno indirizzo e città per ottenere la posizione sulla mappa.");
+  }
+  const { data, error } = await supabase.functions.invoke("geocode-address", {
+    body: {
+      address: form.address.trim(),
+      city: form.city.trim(),
+      province: form.province.trim(),
+      region: form.region.trim(),
+    },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return {
+    latitude: String(data.latitude),
+    longitude: String(data.longitude),
+  };
+}
+
   async function saveSalon() {
     if (!form.name.trim() || !form.slug.trim()) {
       alert("Nome e slug sono obbligatori.");
@@ -291,6 +311,15 @@ function SalonsPage() {
     setSavingSalon(true);
 
     try {
+      let latitude = form.latitude.trim();
+      let longitude = form.longitude.trim();
+
+      if (form.address.trim() && form.city.trim()) {
+        const geo = await geocodeSalonAddress(form);
+        latitude = geo.latitude;
+        longitude = geo.longitude;
+      }
+
       const payload = {
         owner_id: form.owner_id || null,
         name: form.name.trim(),
@@ -304,8 +333,8 @@ function SalonsPage() {
         region: form.region.trim() || null,
         province: form.province.trim() || null,
         city: form.city.trim() || null,
-        latitude: form.latitude.trim() ? Number(form.latitude) : null,
-        longitude: form.longitude.trim() ? Number(form.longitude) : null,
+        latitude: latitude ? Number(latitude) : null,
+        longitude: longitude ? Number(longitude) : null,
       };
 
       if (editingId === "new") {
