@@ -140,6 +140,11 @@ function MyBookingsRoute() {
         </div>
       ) : (
         <div className="space-y-10">
+          <div className="flex justify-end">
+            <Button asChild>
+              <Link to="/prenota">+ Nuova prenotazione</Link>
+            </Button>
+          </div>
           <section>
             <h2 className="text-lg">Prossimi appuntamenti</h2>
             {upcoming.length === 0 ? (
