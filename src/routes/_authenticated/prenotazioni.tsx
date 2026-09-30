@@ -87,9 +87,8 @@ function MyBookingsRoute() {
 
   const cancel = useMutation({
     mutationFn: async (row: Row) => {
-      const limit = row.salons?.cancellation_hours ?? 24;
-      if (hoursUntil(row.appointment_date, row.start_time) < limit) {
-        throw new Error(`Puoi annullare solo fino a ${limit} ore prima. Contatta il salone.`);
+      if (hoursUntil(row.appointment_date, row.start_time) <= 24) {
+        throw new Error("Puoi annullare solo fino a 24 ore prima. Contatta il salone.");
       }
       const { error } = await supabase
         .from("appointments")
@@ -174,8 +173,7 @@ function MyBookingsRoute() {
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        const limit = r.salons?.cancellation_hours ?? 24;
-                        if (hoursUntil(r.appointment_date, r.start_time) < limit) {
+                        if (hoursUntil(r.appointment_date, r.start_time) <= 24) {
                           setCancelFor(r);
                         } else {
                           cancel.mutate(r);
@@ -183,7 +181,7 @@ function MyBookingsRoute() {
                       }}
                       disabled={cancel.isPending}
                     >
-                      Annulla prenotazione
+                      Annulla appuntamento
                     </Button>
                   </div>
                 ))}
