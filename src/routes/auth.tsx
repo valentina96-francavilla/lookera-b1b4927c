@@ -53,6 +53,22 @@ function AuthPage() {
 
   useEffect(() => {
     async function redirectIfAuthenticated() {
+      // Explicitly complete Supabase's email-confirmation PKCE callback.
+      // This makes the flow reliable even when the confirmation link opens
+      // the auth page in a new tab.
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error("Errore conferma email:", error);
+          toast.error("Non è stato possibile confermare l'email. Richiedi un nuovo link.");
+          return;
+        }
+        window.history.replaceState({}, "", window.location.pathname + window.location.search.replace(/([?&])code=[^&]*/, "").replace(/^\?$/, ""));
+      }
+
       const { data } = await supabase.auth.getSession();
       if (!data.session) return;
 
