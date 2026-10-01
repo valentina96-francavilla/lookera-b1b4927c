@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useSession, useRole } from "@/hooks/use-auth";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,8 @@ export function AppointmentDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const qc = useQueryClient();
+  const { user } = useSession();
+  const { data: role } = useRole(user?.id);
   const [rescheduling, setRescheduling] = useState(false);
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState("");
@@ -68,6 +71,18 @@ export function AppointmentDialog({
       if (error) throw error;
       return (data ?? []) as unknown as string[];
     },
+  });
+
+  const resendEmail = useMutation({
+    mutationFn: async () => {
+      if (role !== "super_admin") throw new Error("Non autorizzato");
+      const { error } = await supabase.functions.invoke("send-appointment-email", {
+        body: { appointment_id: appointment!.id, event: "resend" },
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => toast.success("Email reinviata al cliente"),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const update = useMutation({
@@ -214,6 +229,16 @@ export function AppointmentDialog({
             {appointment.status === "pending" && (
               <Button size="sm" onClick={() => update.mutate({ status: "confirmed" })}>
                 Conferma
+              </Button>
+            )}
+            {role === "super_admin" && ["pending", "confirmed"].includes(appointment.status) && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={resendEmail.isPending}
+                onClick={() => resendEmail.mutate()}
+              >
+                {resendEmail.isPending ? "Invio…" : "Reinvia email"}
               </Button>
             )}
             {["pending", "confirmed", "cancelled"].includes(appointment.status) && (
