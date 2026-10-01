@@ -138,7 +138,7 @@ function AuthPage() {
     const emailRedirectTo = returnTo
       ? `${window.location.origin}/auth?returnTo=${encodeURIComponent(returnTo)}`
       : `${window.location.origin}/auth`;
-    const { error } = await supabase.auth.signUp({
+    const { data: signupData, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
@@ -159,6 +159,11 @@ function AuthPage() {
       );
       return;
     }
+    if (signupData.session && getReturnTo()) {
+      redirectAfterAuth();
+      return;
+    }
+
     toast.success("Registrazione completata. Controlla la tua email per confermare la registrazione.", { duration: 12000 });
     return;
   }
