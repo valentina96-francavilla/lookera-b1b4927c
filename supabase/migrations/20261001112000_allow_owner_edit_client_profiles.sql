@@ -1,4 +1,7 @@
 -- Allow salon owners to view and edit client profiles belonging to their salon.
+drop policy if exists "profiles_owner_select_clients" on public.profiles;
+drop policy if exists "profiles_owner_update_clients" on public.profiles;
+
 create policy "profiles_owner_select_clients"
 on public.profiles
 for select
