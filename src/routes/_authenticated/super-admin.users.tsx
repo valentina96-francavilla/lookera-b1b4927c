@@ -60,6 +60,10 @@ function UsersPage() {
   const [savingRole, setSavingRole] =
     useState(false);
 
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [savingName, setSavingName] = useState(false);
+
   const [deletingUserId, setDeletingUserId] =
     useState<string | null>(null);
 
@@ -130,6 +134,38 @@ function UsersPage() {
       );
     } finally {
       setCreatingUser(false);
+    }
+  }
+
+  function startEditName(user: any) {
+    setEditingNameId(user.id);
+    setEditingName(user.full_name ?? "");
+  }
+
+  async function saveName(userId: string) {
+    const name = editingName.trim();
+    if (!name) {
+      alert("Inserisci nome e cognome.");
+      return;
+    }
+
+    setSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: name })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ["sa", "users"] });
+      setEditingNameId(null);
+      setEditingName("");
+      alert("Nome aggiornato correttamente.");
+    } catch (error: any) {
+      alert(error?.message ?? "Errore durante l'aggiornamento del nome.");
+    } finally {
+      setSavingName(false);
     }
   }
 
@@ -409,7 +445,51 @@ function UsersPage() {
                   </td>
 
                   <td className="px-4 py-3">
-                    {u.full_name || "—"}
+                    {editingNameId === u.id ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="min-w-[180px]"
+                          autoFocus
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Salva nome"
+                          disabled={savingName}
+                          onClick={() => saveName(u.id)}
+                        >
+                          <Save className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Annulla"
+                          disabled={savingName}
+                          onClick={() => {
+                            setEditingNameId(null);
+                            setEditingName("");
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>{u.full_name || "—"}</span>
+                        {!isSuperAdmin && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            title="Modifica nome"
+                            onClick={() => startEditName(u)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </td>
 
                   <td className="px-4 py-3">
