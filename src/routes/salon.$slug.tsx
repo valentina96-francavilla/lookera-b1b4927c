@@ -316,15 +316,29 @@ function PublicSalonPage() {
             <p className="mt-3 text-muted-foreground">{salon.description}</p>
           )}
           <div className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
-            {salon.address && (
-              <span className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" /> {salon.address}
-              </span>
+            {(salon.address || salon.city || salon.province) && (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  [salon.address, salon.city, salon.province].filter(Boolean).join(", "),
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 transition-colors hover:text-foreground"
+              >
+                <MapPin className="h-4 w-4 shrink-0" />
+                <span>
+                  {[salon.address, salon.city, salon.province].filter(Boolean).join(", ")}
+                </span>
+              </a>
             )}
             {salon.phone && (
-              <span className="flex items-center gap-2">
-                <Phone className="h-4 w-4" /> {salon.phone}
-              </span>
+              <a
+                href={`tel:${salon.phone}`}
+                className="flex items-center gap-2 transition-colors hover:text-foreground"
+              >
+                <Phone className="h-4 w-4 shrink-0" />
+                <span>{salon.phone}</span>
+              </a>
             )}
           </div>
         </div>
