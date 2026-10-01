@@ -110,7 +110,7 @@ function PublicSalonPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("lookera-booking-draft");
+    const raw = localStorage.getItem("lookera-booking-draft");
     if (!raw) return;
     try {
       const draft = JSON.parse(raw) as { slug?: string; serviceId?: string; date?: string; slot?: string };
@@ -120,10 +120,10 @@ function PublicSalonPage() {
       const savedService = (servicesQ.data ?? []).find((item) => item.id === draft.serviceId);
       if (savedService) {
         setService(savedService);
-        sessionStorage.removeItem("lookera-booking-draft");
+        localStorage.removeItem("lookera-booking-draft");
       }
     } catch {
-      sessionStorage.removeItem("lookera-booking-draft");
+      localStorage.removeItem("lookera-booking-draft");
     }
   }, [slug, servicesQ.data]);
 
@@ -162,7 +162,7 @@ function PublicSalonPage() {
 
   function continueToAuth() {
     if (!service || !date || !slot) return;
-    sessionStorage.setItem("lookera-booking-draft", JSON.stringify({ slug, serviceId: service.id, date, slot }));
+    localStorage.setItem("lookera-booking-draft", JSON.stringify({ slug, serviceId: service.id, date, slot }));
     window.location.href = `/auth?returnTo=${encodeURIComponent(`/salon/${slug}`)}`;
   }
 
