@@ -117,9 +117,11 @@ function PublicSalonPage() {
       if (draft.slug !== slug) return;
       if (draft.date) setDate(draft.date);
       if (draft.slot) setSlot(draft.slot);
-      sessionStorage.removeItem("lookera-booking-draft");
       const savedService = (servicesQ.data ?? []).find((item) => item.id === draft.serviceId);
-      if (savedService) setService(savedService);
+      if (savedService) {
+        setService(savedService);
+        sessionStorage.removeItem("lookera-booking-draft");
+      }
     } catch {
       sessionStorage.removeItem("lookera-booking-draft");
     }
