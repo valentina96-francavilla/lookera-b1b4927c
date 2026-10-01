@@ -240,14 +240,27 @@ function PublicSalonPage() {
     }
   }
 
-  const availableDays = Array.from({ length: 60 }, (_, i) => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + i);
-    const key = toDateKey(d);
-    const hours = (hoursQ.data ?? []).find((h) => h.day_of_week === d.getDay());
-    return { date: d, key, closed: !hours || hours.is_closed };
-  });
+  const availableDays = (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Always start from Monday of the current week, so the calendar
+    // is consistently displayed Monday → Sunday.
+    const monday = new Date(today);
+    const dayOfWeek = monday.getDay();
+    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    monday.setDate(monday.getDate() - daysFromMonday);
+
+    // 9 complete weeks = Monday → Sunday throughout the calendar.
+    return Array.from({ length: 63 }, (_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const key = toDateKey(d);
+      const hours = (hoursQ.data ?? []).find((h) => h.day_of_week === d.getDay());
+      const past = d < today;
+      return { date: d, key, closed: past || !hours || hours.is_closed };
+    });
+  })();
 
   async function logout() {
     await supabase.auth.signOut();
