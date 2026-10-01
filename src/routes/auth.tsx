@@ -58,6 +58,8 @@ function AuthPage() {
       // the auth page in a new tab.
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
+      const tokenHash = params.get("token_hash");
+      const tokenType = params.get("type");
 
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -66,7 +68,29 @@ function AuthPage() {
           toast.error("Non è stato possibile confermare l'email. Richiedi un nuovo link.");
           return;
         }
-        window.history.replaceState({}, "", window.location.pathname + window.location.search.replace(/([?&])code=[^&]*/, "").replace(/^\?$/, ""));
+        params.delete("code");
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + (params.toString() ? `?${params.toString()}` : ""),
+        );
+      } else if (tokenHash && tokenType === "email") {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "email",
+        });
+        if (error) {
+          console.error("Errore conferma email:", error);
+          toast.error("Non è stato possibile confermare l'email. Richiedi un nuovo link.");
+          return;
+        }
+        params.delete("token_hash");
+        params.delete("type");
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + (params.toString() ? `?${params.toString()}` : ""),
+        );
       }
 
       const { data } = await supabase.auth.getSession();
