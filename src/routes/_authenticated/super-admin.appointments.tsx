@@ -63,7 +63,7 @@ function AppointmentsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {rows.map((a) => (
-              <tr>
+              <tr
                 key={a.id}
                 className="cursor-pointer transition-colors hover:bg-muted/60"
                 onClick={() => openAppointment(a.id)}
