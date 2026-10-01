@@ -209,6 +209,8 @@ function PublicSalonPage() {
         },
       );
 
+      localStorage.removeItem("lookera-booking-draft");
+
       if (emailError) {
         console.error("Errore invio email appuntamento:", emailError);
         toast.warning(
