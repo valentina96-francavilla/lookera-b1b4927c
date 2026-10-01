@@ -48,11 +48,13 @@ function PublicSalonPage() {
 
   const salonQ = useQuery({
     queryKey: ["public-salon", slug],
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("salons")
         .select("*")
         .eq("slug", slug)
+        .limit(1)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -148,6 +150,16 @@ function PublicSalonPage() {
 
   if (salonQ.isLoading) {
     return <div className="p-10 text-center text-muted-foreground">Caricamento…</div>;
+  }
+  if (salonQ.error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+        <h1 className="text-2xl">Non è stato possibile caricare il salone</h1>
+        <p className="max-w-md text-sm text-muted-foreground">Ricarica la pagina e riprova.</p>
+        <button type="button" onClick={() => void salonQ.refetch()} className="text-primary underline">Riprova</button>
+        <Link to="/index2" className="text-sm text-muted-foreground underline">Torna alla home</Link>
+      </div>
+    );
   }
   if (!salon) {
     return (
