@@ -104,7 +104,7 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
         start_time: hhmm(slot),
         end_time: addMinutesToTime(slot, service.duration_min),
         price: Number(service.price),
-        status: "confirmed",
+        status: "pending",
         customer_name: client.name,
         customer_email: client.email,
         customer_phone: form.phone || client.phone || null,
