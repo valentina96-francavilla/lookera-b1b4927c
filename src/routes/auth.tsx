@@ -134,11 +134,15 @@ function AuthPage() {
       return;
     }
     setLoading(true);
+    const returnTo = getReturnTo();
+    const emailRedirectTo = returnTo
+      ? `${window.location.origin}/auth?returnTo=${encodeURIComponent(returnTo)}`
+      : `${window.location.origin}/auth`;
     const { error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth`,
+        emailRedirectTo,
         data: {
           full_name: parsed.data.fullName,
           phone: parsed.data.phone,
