@@ -42,10 +42,25 @@ function AuthPage() {
   const [role, setRole] = useState<"owner" | "client">("client");
   const [tab, setTab] = useState("login");
 
+  function getReturnTo() {
+    const value = new URLSearchParams(window.location.search).get("returnTo");
+    return value && value.startsWith("/") && !value.startsWith("//") ? value : null;
+  }
+
+  function redirectAfterAuth() {
+    window.location.href = getReturnTo() || "/prenotazioni";
+  }
+
   useEffect(() => {
     async function redirectIfAuthenticated() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) return;
+
+      const returnTo = getReturnTo();
+      if (returnTo) {
+        window.location.href = returnTo;
+        return;
+      }
 
       const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
       if (isSuperAdmin === true) {
@@ -81,6 +96,11 @@ function AuthPage() {
       );
       return;
     }
+    if (getReturnTo()) {
+      redirectAfterAuth();
+      return;
+    }
+
     const { data: isSuperAdmin } = await (supabase.rpc as any)("is_super_admin");
     if (isSuperAdmin === true) {
       navigate({ to: "/super-admin" });
