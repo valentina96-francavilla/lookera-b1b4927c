@@ -25,11 +25,13 @@ import { addMinutesToTime, euro, hhmm, toDateKey } from "@/lib/lookera";
 import { Plus } from "lucide-react";
 
 type Service = { id: string; name: string; price: number | string; duration_min: number };
+type Client = { id: string; name: string; email: string; phone: string | null };
 
 export function NewAppointmentDialog({ salonId }: { salonId: string }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [serviceId, setServiceId] = useState("");
+  const [clientId, setClientId] = useState("");
   const [date, setDate] = useState(toDateKey(new Date()));
   const [slot, setSlot] = useState("");
 
@@ -44,6 +46,31 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
         .order("name");
       if (error) throw error;
       return (data ?? []) as Service[];
+    },
+  });
+
+  const clientsQ = useQuery({
+    queryKey: ["appointment-clients", salonId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("client_id,customer_name,customer_email,customer_phone")
+        .eq("salon_id", salonId)
+        .not("client_id", "is", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+
+      const map = new Map<string, Client>();
+      for (const row of data ?? []) {
+        if (!row.client_id || map.has(row.client_id)) continue;
+        map.set(row.client_id, {
+          id: row.client_id,
+          name: row.customer_name || "Cliente",
+          email: row.customer_email || "",
+          phone: row.customer_phone || null,
+        });
+      }
+      return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
     },
   });
 
@@ -62,21 +89,25 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
   });
 
   const service = servicesQ.data?.find((s) => s.id === serviceId);
+  const client = clientsQ.data?.find((c) => c.id === clientId);
 
   const create = useMutation({
-    mutationFn: async (form: { name: string; email: string; phone: string; notes: string }) => {
+    mutationFn: async (form: { phone: string; notes: string }) => {
       if (!service || !slot) throw new Error("Seleziona servizio e orario");
+      if (!client) throw new Error("Seleziona un cliente registrato");
+
       const { error } = await supabase.from("appointments").insert({
         salon_id: salonId,
+        client_id: client.id,
         service_id: service.id,
         appointment_date: date,
         start_time: hhmm(slot),
         end_time: addMinutesToTime(slot, service.duration_min),
         price: Number(service.price),
         status: "confirmed",
-        customer_name: form.name,
-        customer_email: form.email,
-        customer_phone: form.phone || null,
+        customer_name: client.name,
+        customer_email: client.email,
+        customer_phone: form.phone || client.phone || null,
         notes: form.notes || null,
       });
       if (error) throw error;
@@ -84,24 +115,23 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["appointments"] });
       qc.invalidateQueries({ queryKey: ["slots"] });
+      qc.invalidateQueries({ queryKey: ["appointment-clients", salonId] });
       toast.success("Appuntamento creato");
       setOpen(false);
       setSlot("");
+      setClientId("");
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const name = String(f.get("name") ?? "").trim();
-    if (name.length < 2) {
-      toast.error("Inserisci il nome del cliente");
+    if (!clientId) {
+      toast.error("Seleziona un cliente registrato");
       return;
     }
+    const f = new FormData(e.currentTarget);
     create.mutate({
-      name,
-      email: String(f.get("email") ?? "").trim(),
       phone: String(f.get("phone") ?? "").trim(),
       notes: String(f.get("notes") ?? "").trim(),
     });
@@ -117,9 +147,32 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Nuovo appuntamento</DialogTitle>
-          <DialogDescription>Inserisci una prenotazione ricevuta al telefono.</DialogDescription>
+          <DialogDescription>
+            Inserisci una prenotazione ricevuta al telefono per un cliente già registrato.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Cliente *</Label>
+            <Select value={clientId} onValueChange={setClientId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Scegli un cliente registrato" />
+              </SelectTrigger>
+              <SelectContent>
+                {(clientsQ.data ?? []).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}{c.email ? ` · ${c.email}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {clientsQ.data?.length === 0 && !clientsQ.isLoading && (
+              <p className="text-xs text-muted-foreground">
+                Nessun cliente registrato ha ancora un appuntamento in questo salone. Il cliente deve prima creare un account e prenotare online.
+              </p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label>Servizio</Label>
             <Select
@@ -141,6 +194,7 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
               </SelectContent>
             </Select>
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="na-date">Data</Label>
             <Input
@@ -153,6 +207,7 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
               }}
             />
           </div>
+
           {serviceId && (
             <div className="space-y-2">
               <Label>Orario</Label>
@@ -177,25 +232,24 @@ export function NewAppointmentDialog({ salonId }: { salonId: string }) {
               )}
             </div>
           )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="na-name">Nome cliente *</Label>
-              <Input id="na-name" name="name" required maxLength={80} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="na-phone">Telefono</Label>
-              <Input id="na-phone" name="phone" maxLength={30} />
-            </div>
-          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="na-email">Email</Label>
-            <Input id="na-email" name="email" type="email" maxLength={255} />
+            <Label htmlFor="na-phone">Telefono</Label>
+            <Input
+              id="na-phone"
+              name="phone"
+              maxLength={30}
+              defaultValue={client?.phone ?? ""}
+              placeholder={client?.phone ?? "Telefono"}
+            />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="na-notes">Note private</Label>
             <Textarea id="na-notes" name="notes" rows={2} maxLength={500} />
           </div>
-          <Button type="submit" className="w-full" disabled={!slot || create.isPending}>
+
+          <Button type="submit" className="w-full" disabled={!slot || !clientId || create.isPending}>
             Crea appuntamento
           </Button>
         </form>
