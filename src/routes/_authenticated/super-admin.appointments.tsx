@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_CLASSES, STATUS_LABELS, hhmm } from "@/lib/lookera";
 import { fmtDate, useAdminData } from "@/lib/super-admin";
+import { supabase } from "@/integrations/supabase/client";
+import { AppointmentDialog, type AppointmentRow } from "@/components/appointment-dialog";
 
 export const Route = createFileRoute("/_authenticated/super-admin/appointments")({
   component: AppointmentsPage,
@@ -14,11 +16,27 @@ function AppointmentsPage() {
   const [salon, setSalon] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
+  const [selected, setSelected] = useState<AppointmentRow | null>(null);
   const s = salons.data ?? [];
   const rows = (appointments.data ?? []).filter(
     (a) => (!salon || a.salon_id === salon) && (!status || a.status === status) && (!date || a.appointment_date === date),
   );
   const sel = "rounded-md border border-input bg-background px-3 py-2 text-sm";
+
+  async function openAppointment(id: string) {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("id,salon_id,service_id,appointment_date,start_time,end_time,price,status,notes,customer_name,customer_email,customer_phone,services(name,duration_min)")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSelected(data as unknown as AppointmentRow);
+  }
 
   return (
     <div className="space-y-6">
@@ -45,7 +63,7 @@ function AppointmentsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {rows.map((a) => (
-              <tr key={a.id}>
+              <tr\n                key={a.id}\n                className="cursor-pointer transition-colors hover:bg-muted/60"\n                onClick={() => openAppointment(a.id)}\n              >
                 <td className="px-4 py-3">{s.find((x) => x.id === a.salon_id)?.name ?? "—"}</td>
                 <td className="px-4 py-3">{a.customer_name || a.customer_email || "Cliente"}</td>
                 <td className="px-4 py-3">{a.services?.name ?? "—"}</td>
@@ -65,6 +83,13 @@ function AppointmentsPage() {
           </tbody>
         </table>
       </div>
+
+      <AppointmentDialog
+        appointment={selected}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null);
+        }}
+      />
     </div>
   );
 }
