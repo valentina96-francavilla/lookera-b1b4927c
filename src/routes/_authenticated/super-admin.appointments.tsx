@@ -63,7 +63,11 @@ function AppointmentsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {rows.map((a) => (
-              <tr\n                key={a.id}\n                className="cursor-pointer transition-colors hover:bg-muted/60"\n                onClick={() => openAppointment(a.id)}\n              >
+              <tr>
+                key={a.id}
+                className="cursor-pointer transition-colors hover:bg-muted/60"
+                onClick={() => openAppointment(a.id)}
+              >
                 <td className="px-4 py-3">{s.find((x) => x.id === a.salon_id)?.name ?? "—"}</td>
                 <td className="px-4 py-3">{a.customer_name || a.customer_email || "Cliente"}</td>
                 <td className="px-4 py-3">{a.services?.name ?? "—"}</td>
