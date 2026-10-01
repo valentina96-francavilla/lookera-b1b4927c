@@ -58,7 +58,7 @@ function ClientsContent({ salonId }: { salonId: string }) {
   const clients = useMemo(() => {
     const map = new Map<
       string,
-      { name: string; email: string; phone: string | null; visits: Row[]; spent: number }
+      { name: string; email: string; phone: string | null; clientId: string | null; visits: Row[]; spent: number }
     >();
     for (const r of q.data ?? []) {
       const key = (r.customer_email || r.customer_name || r.id).toLowerCase();
@@ -66,12 +66,14 @@ function ClientsContent({ salonId }: { salonId: string }) {
         name: r.customer_name || "Cliente",
         email: r.customer_email,
         phone: r.customer_phone,
+        clientId: r.client_id,
         visits: [],
         spent: 0,
       };
       entry.visits.push(r);
       if (r.status === "completed") entry.spent += Number(r.price);
       if (!entry.phone && r.customer_phone) entry.phone = r.customer_phone;
+      if (!entry.clientId && r.client_id) entry.clientId = r.client_id;
       map.set(key, entry);
     }
     const list = [...map.values()];
@@ -140,7 +142,7 @@ function ClientsContent({ salonId }: { salonId: string }) {
             const isEditing = editingKey === key;
 
             return (
-            <div key={key} className="surface p-4">
+              <div key={key} className="surface p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   {isEditing ? (
@@ -210,7 +212,7 @@ function ClientsContent({ salonId }: { salonId: string }) {
                 ))}
               </ul>
             </div>
-            );
+              );
           })}
         </div>
       )}
