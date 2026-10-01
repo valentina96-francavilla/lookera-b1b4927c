@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Clock, MapPin, Phone, Star, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,6 +109,22 @@ function PublicSalonPage() {
   const [slot, setSlot] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    const raw = sessionStorage.getItem("lookera-booking-draft");
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw) as { slug?: string; serviceId?: string; date?: string; slot?: string };
+      if (draft.slug !== slug) return;
+      if (draft.date) setDate(draft.date);
+      if (draft.slot) setSlot(draft.slot);
+      sessionStorage.removeItem("lookera-booking-draft");
+      const savedService = (servicesQ.data ?? []).find((item) => item.id === draft.serviceId);
+      if (savedService) setService(savedService);
+    } catch {
+      sessionStorage.removeItem("lookera-booking-draft");
+    }
+  }, [slug, servicesQ.data]);
+
   const slotsQ = useQuery({
     queryKey: ["public-slots", salon?.id, service?.id, date],
     enabled: !!salon?.id && !!service?.id && !!date,
@@ -142,12 +158,15 @@ function PublicSalonPage() {
     );
   }
 
+  function continueToAuth() {
+    if (!service || !date || !slot) return;
+    sessionStorage.setItem("lookera-booking-draft", JSON.stringify({ slug, serviceId: service.id, date, slot }));
+    window.location.href = `/auth?returnTo=${encodeURIComponent(`/salon/${slug}`)}`;
+  }
+
   async function submitBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!user) {
-      toast.error("Accedi o registrati per prenotare.");
-      return;
-    }
+    if (!user) return;
     if (!service || !date || !slot || !salon) return;
 
     const form = new FormData(e.currentTarget);
@@ -395,7 +414,22 @@ function PublicSalonPage() {
             </div>
           )}
 
-          {service && date && slot && (
+          {service && date && slot && !user && (
+            <div className="surface mt-4 space-y-4 p-5">
+              <p className="text-sm font-medium">4. Accedi per prenotare</p>
+              <p className="text-sm text-muted-foreground">
+                {service.name} · {formatDateIt(date)} · {hhmm(slot)} · {euro(service.price)}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Hai scelto il tuo appuntamento. Accedi o registrati per inviare la richiesta al salone.
+              </p>
+              <Button type="button" className="w-full" onClick={continueToAuth}>
+                Accedi o registrati
+              </Button>
+            </div>
+          )}
+
+          {service && date && slot && user && (
             <form onSubmit={submitBooking} className="surface mt-4 space-y-4 p-5">
               <p className="text-sm font-medium">4. I tuoi dati</p>
               <p className="text-sm text-muted-foreground">
@@ -404,17 +438,11 @@ function PublicSalonPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="b-name">Nome e cognome</Label>
-                  <Input id="b-name" name="name" required maxLength={80} defaultValue={String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? "")} />
+                  <Input id="b-name" name="name" required maxLength={80} defaultValue={String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="b-email">Email</Label>
-                  <Input
-                    id="b-email"
-                    name="email"
-                    type="email"
-                    required
-                    defaultValue={user?.email ?? ""}
-                  />
+                  <Input id="b-email" name="email" type="email" required defaultValue={user.email ?? ""} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="b-phone">Telefono</Label>
@@ -425,7 +453,7 @@ function PublicSalonPage() {
                   <Textarea id="b-notes" name="notes" rows={2} maxLength={300} />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting || !user}>
+              <Button type="submit" className="w-full" disabled={submitting}>
                 Conferma prenotazione
               </Button>
             </form>
