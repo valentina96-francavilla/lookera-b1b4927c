@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Scissors, User } from "lucide-react";
+import { Scissors, User, MailCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
@@ -41,6 +41,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<"owner" | "client">("client");
   const [tab, setTab] = useState("login");
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
 
   function getReturnTo() {
     const value = new URLSearchParams(window.location.search).get("returnTo");
@@ -53,9 +54,6 @@ function AuthPage() {
 
   useEffect(() => {
     async function redirectIfAuthenticated() {
-      // Explicitly complete Supabase's email-confirmation PKCE callback.
-      // This makes the flow reliable even when the confirmation link opens
-      // the auth page in a new tab.
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       const tokenHash = params.get("token_hash");
@@ -153,11 +151,7 @@ function AuthPage() {
       .eq("user_id", (await supabase.auth.getUser()).data.user?.id ?? "");
 
     const roles = (roleRows ?? []).map((r) => r.role);
-    if (roles.includes("owner")) {
-      navigate({ to: "/dashboard" });
-    } else {
-      navigate({ to: "/prenotazioni" });
-    }
+    navigate({ to: roles.includes("owner") ? "/dashboard" : "/prenotazioni" });
   }
 
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
@@ -173,11 +167,13 @@ function AuthPage() {
       toast.error(parsed.error.issues[0]?.message ?? "Dati non validi");
       return;
     }
+
     setLoading(true);
     const returnTo = getReturnTo();
     const emailRedirectTo = returnTo
       ? `${window.location.origin}/auth?returnTo=${encodeURIComponent(returnTo)}`
       : `${window.location.origin}/auth`;
+
     const { data: signupData, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
@@ -191,6 +187,7 @@ function AuthPage() {
       },
     });
     setLoading(false);
+
     if (error) {
       toast.error(
         error.message.includes("already registered")
@@ -199,13 +196,77 @@ function AuthPage() {
       );
       return;
     }
+
     if (signupData.session && getReturnTo()) {
       redirectAfterAuth();
       return;
     }
 
-    toast.success("Registrazione completata. Controlla la tua email per confermare la registrazione.", { duration: 12000 });
-    return;
+    setConfirmationEmail(parsed.data.email);
+  }
+
+  async function resendConfirmation() {
+    if (!confirmationEmail) return;
+    setLoading(true);
+    const returnTo = getReturnTo();
+    const emailRedirectTo = returnTo
+      ? `${window.location.origin}/auth?returnTo=${encodeURIComponent(returnTo)}`
+      : `${window.location.origin}/auth`;
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: confirmationEmail,
+      options: { emailRedirectTo },
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error("Non è stato possibile reinviare l'email.");
+      return;
+    }
+    toast.success("Email di conferma reinviata.");
+  }
+
+  if (confirmationEmail) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <header className="px-4 py-5 sm:px-8">
+          <Link to="/" className="font-display text-xl font-semibold">
+            Look<span className="text-primary">Era</span>
+          </Link>
+        </header>
+        <div className="flex flex-1 items-center justify-center px-4 pb-16">
+          <div className="w-full max-w-md">
+            <div className="surface p-6 text-center sm:p-8">
+              <MailCheck className="mx-auto h-10 w-10 text-primary" />
+              <h1 className="mt-5 text-2xl">Controlla la tua email</h1>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Abbiamo inviato un link di conferma a <strong>{confirmationEmail}</strong>.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Dopo aver confermato l'account, tornerai automaticamente alla prenotazione che hai scelto.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-6 w-full"
+                onClick={() => void resendConfirmation()}
+                disabled={loading}
+              >
+                {loading ? "Invio…" : "Reinvia email di conferma"}
+              </Button>
+              <Link
+                to="/auth"
+                className="mt-4 block text-sm text-muted-foreground underline"
+                onClick={() => setConfirmationEmail(null)}
+              >
+                Torna all'accesso
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -236,21 +297,12 @@ function AuthPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
-                    <Input
-                      id="login-password"
-                      name="password"
-                      type="password"
-                      required
-                      autoComplete="current-password"
-                    />
+                    <Input id="login-password" name="password" type="password" required autoComplete="current-password" />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Accesso…" : "Accedi"}
                   </Button>
-                  <Link
-                    to="/recupera-password"
-                    className="block text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
-                  >
+                  <Link to="/recupera-password" className="block text-center text-sm text-muted-foreground underline-offset-4 hover:underline">
                     Password dimenticata?
                   </Link>
                 </form>
@@ -274,9 +326,7 @@ function AuthPage() {
                       onClick={() => setRole(opt.key)}
                       className={cn(
                         "flex flex-col items-start gap-2 rounded-xl border p-3 text-left text-sm transition-colors",
-                        role === opt.key
-                          ? "border-primary bg-accent text-accent-foreground"
-                          : "border-border hover:bg-muted",
+                        role === opt.key ? "border-primary bg-accent text-accent-foreground" : "border-border hover:bg-muted",
                       )}
                     >
                       <opt.icon className="h-4 w-4" />
@@ -299,14 +349,7 @@ function AuthPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      required
-                      minLength={8}
-                      autoComplete="new-password"
-                    />
+                    <Input id="signup-password" name="password" type="password" required minLength={8} autoComplete="new-password" />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Creazione…" : "Inizia gratis"}
