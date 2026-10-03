@@ -110,8 +110,14 @@ function PublicSalonPage() {
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
+    setIsDemo(new URLSearchParams(window.location.search).get("demo") === "1");
+  }, []);
+
+  useEffect(() => {
+    if (isDemo) return;
     const raw = localStorage.getItem("lookera-booking-draft");
     if (!raw) return;
     try {
@@ -127,7 +133,7 @@ function PublicSalonPage() {
     } catch {
       localStorage.removeItem("lookera-booking-draft");
     }
-  }, [slug, servicesQ.data]);
+  }, [slug, servicesQ.data, isDemo]);
 
   const slotsQ = useQuery({
     queryKey: ["public-slots", salon?.id, service?.id, date],
@@ -173,15 +179,25 @@ function PublicSalonPage() {
   }
 
   function continueToAuth() {
-    if (!service || !date || !slot) return;
+    if (isDemo || !service || !date || !slot) return;
     localStorage.setItem("lookera-booking-draft", JSON.stringify({ slug, serviceId: service.id, date, slot }));
     window.location.href = `/auth?returnTo=${encodeURIComponent(`/salon/${slug}`)}`;
   }
 
   async function submitBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!user) return;
     if (!service || !date || !slot || !salon) return;
+
+    if (isDemo) {
+      setSubmitting(true);
+      window.setTimeout(() => {
+        setSubmitting(false);
+        toast.success("Demo completata! Nessun profilo o appuntamento è stato creato.");
+      }, 500);
+      return;
+    }
+
+    if (!user) return;
 
     const form = new FormData(e.currentTarget);
     const customerName = String(form.get("name") ?? "").trim();
@@ -457,7 +473,7 @@ function PublicSalonPage() {
             </div>
           )}
 
-          {service && date && slot && !user && (
+          {service && date && slot && !user && !isDemo && (
             <div className="surface mt-4 space-y-4 p-5">
               <p className="text-sm font-medium">4. Accedi per prenotare</p>
               <p className="text-sm text-muted-foreground">
@@ -472,20 +488,25 @@ function PublicSalonPage() {
             </div>
           )}
 
-          {service && date && slot && user && (
+          {service && date && slot && (isDemo || user) && (
             <form onSubmit={submitBooking} className="surface mt-4 space-y-4 p-5">
-              <p className="text-sm font-medium">4. I tuoi dati</p>
+              <p className="text-sm font-medium">4. {isDemo ? "Simula la prenotazione" : "I tuoi dati"}</p>
               <p className="text-sm text-muted-foreground">
                 {service.name} · {formatDateIt(date)} · {hhmm(slot)} · {euro(service.price)}
               </p>
+              {isDemo && (
+                <p className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
+                  Questa è una demo: puoi completare il flusso, ma non verrà creato alcun profilo, appuntamento o modifica nei dati del salone.
+                </p>
+              )}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="b-name">Nome e cognome</Label>
-                  <Input id="b-name" name="name" required maxLength={80} defaultValue={String(user.user_metadata?.full_name ?? user.user_metadata?.name ?? "")} />
+                  <Input id="b-name" name="name" required maxLength={80} defaultValue={isDemo ? "" : String(user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? "")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="b-email">Email</Label>
-                  <Input id="b-email" name="email" type="email" required defaultValue={user.email ?? ""} />
+                  <Input id="b-email" name="email" type="email" required defaultValue={isDemo ? "" : (user?.email ?? "")} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="b-phone">Telefono</Label>
@@ -497,7 +518,7 @@ function PublicSalonPage() {
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={submitting}>
-                Conferma prenotazione
+                {isDemo ? "Completa la demo" : "Conferma prenotazione"}
               </Button>
             </form>
           )}
