@@ -12,6 +12,7 @@ export type Salon = {
   address: string | null;
   phone: string | null;
   email: string | null;
+  plan: "starter" | "professional" | "business";
   image_url: string | null;
   cancellation_hours: number;
   region: string | null;
@@ -60,6 +61,7 @@ export function OwnerPage({
   return (
     <AppShell
       role="owner"
+      salonPlan={salon.plan}
       title={title}
       {...(subtitle === undefined ? {} : { subtitle })}
       {...(actions === undefined ? {} : { actions })}
