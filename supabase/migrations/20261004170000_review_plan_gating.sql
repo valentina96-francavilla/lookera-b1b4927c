@@ -53,3 +53,18 @@ ON public.reviews
 FOR SELECT
 TO authenticated
 USING (client_id = (select auth.uid()));
+
+-- The aggregate RPC must enforce the same plan gate as the UI/RLS.
+CREATE OR REPLACE FUNCTION public.salon_rating(p_salon uuid)
+RETURNS TABLE (avg_rating numeric, review_count bigint)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT round(avg(r.rating)::numeric, 2), count(*)
+  FROM public.reviews r
+  JOIN public.salons s ON s.id = r.salon_id
+  WHERE r.salon_id = p_salon
+    AND s.plan = 'professional'
+$$;
