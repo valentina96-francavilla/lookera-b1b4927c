@@ -13,7 +13,18 @@ export const Route = createFileRoute("/_authenticated/recensioni")({
 function ReviewsRoute() {
   return (
     <OwnerPage title="Recensioni" subtitle="Cosa dicono i tuoi clienti">
-      {(salon) => <ReviewsContent salonId={salon.id} />}
+      {(salon) =>
+        salon.plan === "professional" ? (
+          <ReviewsContent salonId={salon.id} />
+        ) : (
+          <div className="surface p-6">
+            <h2 className="text-lg font-semibold">Funzionalità Professional</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Le recensioni e le relative statistiche sono disponibili solo con il piano Professional.
+            </p>
+          </div>
+        )
+      }
     </OwnerPage>
   );
 }
