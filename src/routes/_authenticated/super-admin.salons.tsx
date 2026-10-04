@@ -68,6 +68,7 @@ type SalonForm = {
   latitude: string;
   longitude: string;
   activity_type: string;
+  plan: "starter" | "professional" | "business";
 };
 
 const emptyForm: SalonForm = {
@@ -86,6 +87,7 @@ const emptyForm: SalonForm = {
   latitude: "",
   longitude: "",
   activity_type: "Parrucchiere",
+  plan: "starter",
 };
 
 
@@ -226,6 +228,7 @@ function SalonsPage() {
       latitude: salon.latitude != null ? String(salon.latitude) : "",
       longitude: salon.longitude != null ? String(salon.longitude) : "",
       activity_type: salon.activity_type ?? "Parrucchiere",
+      plan: salon.plan ?? "starter",
     });
     setInitialLocation({
       address: salon.address ?? "",
@@ -403,6 +406,7 @@ async function geocodeSalonAddress(form: SalonForm) {
         latitude: latitude ? Number(latitude) : null,
         longitude: longitude ? Number(longitude) : null,
         activity_type: form.activity_type || "Parrucchiere",
+        plan: form.plan,
       };
 
       if (editingId === "new") {
@@ -752,6 +756,26 @@ async function geocodeSalonAddress(form: SalonForm) {
                   <option>Centro estetico</option>
                   <option>Parrucchiere</option>
                   <option>Barbiere</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Piano
+                </label>
+                <select
+                  value={form.plan}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      plan: e.target.value as SalonForm["plan"],
+                    }))
+                  }
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="starter">Starter</option>
+                  <option value="professional">Professional</option>
+                  <option value="business">Business</option>
                 </select>
               </div>
 
@@ -1422,6 +1446,7 @@ async function geocodeSalonAddress(form: SalonForm) {
                 "Nome",
                 "Proprietario",
                 "Email",
+                "Piano",
                 "Stato",
                 "Servizi",
                 "Appuntamenti",
@@ -1454,6 +1479,12 @@ async function geocodeSalonAddress(form: SalonForm) {
 
                 <td className="px-4 py-3">
                   {s.email || owner?.email || "—"}
+                </td>
+
+                <td className="px-4 py-3">
+                  <Badge variant="outline">
+                    {s.plan === "professional" ? "Professional" : s.plan === "business" ? "Business" : "Starter"}
+                  </Badge>
                 </td>
 
                 <td className="px-4 py-3">
@@ -1532,7 +1563,7 @@ async function geocodeSalonAddress(form: SalonForm) {
             {rows.length === 0 && (
               <tr>
                 <td
-                  colSpan={9}
+                  colSpan={10}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   Nessun punto vendita.
