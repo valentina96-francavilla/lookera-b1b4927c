@@ -250,6 +250,7 @@ export type Database = {
           name: string
           owner_id: string | null
           phone: string | null
+          plan: "starter" | "professional" | "business"
           province: string | null
           region: string | null
           slug: string
@@ -269,6 +270,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           phone?: string | null
+          plan?: "starter" | "professional" | "business"
           province?: string | null
           region?: string | null
           slug: string
@@ -288,6 +290,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           phone?: string | null
+          plan?: "starter" | "professional" | "business"
           province?: string | null
           region?: string | null
           slug?: string
