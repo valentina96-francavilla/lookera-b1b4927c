@@ -93,7 +93,7 @@ function PublicSalonPage() {
 
   const reviewsQ = useQuery({
     queryKey: ["public-reviews", salon?.id],
-    enabled: !!salon?.id,
+    enabled: !!salon?.id && salon?.plan === "professional",
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reviews")
@@ -524,7 +524,7 @@ function PublicSalonPage() {
           )}
         </section>
 
-        {ratings.length > 0 && (
+        {salon?.plan === "professional" && ratings.length > 0 && (
           <section className="mt-10">
             <h2 className="text-2xl">Recensioni</h2>
             <div className="mt-4 space-y-3">
