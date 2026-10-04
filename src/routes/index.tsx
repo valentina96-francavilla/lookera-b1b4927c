@@ -260,34 +260,42 @@ function Landing() {
       <section id="prezzi" className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <h2 className="text-3xl">Prezzi trasparenti</h2>
         <p className="mt-2 text-muted-foreground">Inizia gratis, cresci quando ti serve.</p>
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
           <div className="surface p-7">
-            <h3 className="text-xl">Start</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Per iniziare subito</p>
-            <p className="mt-5 text-4xl font-semibold">€0</p>
+            <h3 className="text-xl">Starter</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Tutto il necessario per iniziare</p>
+            <p className="mt-5 text-4xl font-semibold">€29<span className="text-base font-normal text-muted-foreground">/mese</span></p>
             <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
               <li>Agenda e prenotazioni online</li>
-              <li>Servizi e orari illimitati</li>
+              <li>Servizi, prezzi e orari</li>
               <li>Pagina pubblica del salone</li>
+              <li>Gestione clienti</li>
             </ul>
-            <Button asChild className="mt-6 w-full">
-              <Link to="/auth">Inizia gratis</Link>
-            </Button>
+            <Button asChild className="mt-6 w-full"><Link to="/auth">Contattaci</Link></Button>
           </div>
           <div className="surface border-primary/40 p-7">
-            <h3 className="text-xl">Pro</h3>
-            <p className="mt-1 text-sm text-muted-foreground">In arrivo</p>
-            <p className="mt-5 text-4xl font-semibold">
-              €19<span className="text-base font-normal text-muted-foreground">/mese</span>
-            </p>
+            <h3 className="text-xl">Professional</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Per saloni che vogliono crescere</p>
+            <p className="mt-5 text-4xl font-semibold">€49<span className="text-base font-normal text-muted-foreground">/mese</span></p>
             <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
-              <li>Promemoria automatici</li>
-              <li>Statistiche avanzate</li>
-              <li>Team e più sedi</li>
+              <li>Tutto di Starter</li>
+              <li>Recensioni e statistiche</li>
+              <li>Dashboard avanzata</li>
+              <li>Più operatori e agenda team</li>
             </ul>
-            <Button variant="outline" className="mt-6 w-full" disabled>
-              Presto disponibile
-            </Button>
+            <Button asChild className="mt-6 w-full"><Link to="/auth">Contattaci</Link></Button>
+          </div>
+          <div className="surface p-7">
+            <h3 className="text-xl">Business</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Per realtà multi-sede</p>
+            <p className="mt-5 text-4xl font-semibold">Coming soon</p>
+            <ul className="mt-5 space-y-2 text-sm text-muted-foreground">
+              <li>Tutto di Professional</li>
+              <li>Più sedi</li>
+              <li>Gestione centralizzata</li>
+              <li>Ruoli e permessi avanzati</li>
+            </ul>
+            <Button variant="outline" className="mt-6 w-full" disabled>Presto disponibile</Button>
           </div>
         </div>
       </section>
