@@ -11,7 +11,7 @@ const ownerNav = [
   { to: "/servizi", label: "Servizi", icon: Scissors },
   { to: "/orari", label: "Orari", icon: Clock },
   { to: "/clienti", label: "Clienti", icon: Users },
-  { to: "/recensioni", label: "Recensioni", icon: Star },
+  { to: "/recensioni", label: "Recensioni", icon: Star, professionalOnly: true },
 ];
 
 const clientNav = [
@@ -25,14 +25,18 @@ export function AppShell({
   subtitle,
   actions,
   children,
+  salonPlan,
 }: {
   role: "owner" | "client";
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
+  salonPlan?: "starter" | "professional" | "business";
 }) {
-  const nav = role === "owner" ? ownerNav : clientNav;
+  const nav = role === "owner"
+    ? ownerNav.filter((item) => !item.professionalOnly || salonPlan === "professional")
+    : clientNav;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
