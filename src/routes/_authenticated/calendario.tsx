@@ -143,7 +143,7 @@ function CalendarContent({ salonId }: { salonId: string }) {
 
       {view === "month" ? (
         <div className="surface overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border bg-muted/50 text-center text-xs text-muted-foreground">
+          <div className="grid grid-cols-7 border-b border-border bg-muted/50 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:text-xs">
             {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((d) => (
               <div key={d} className="py-2">
                 {d}
@@ -159,26 +159,33 @@ function CalendarContent({ salonId }: { salonId: string }) {
                 <div
                   key={key}
                   className={cn(
-                    "min-h-24 border-b border-r border-border p-1.5",
+                    "min-h-16 border-b border-r border-border p-1 sm:min-h-28 sm:p-2",
                     otherMonth && "bg-muted/30 text-muted-foreground",
                   )}
                 >
-                  <div className="text-xs">{d.getDate()}</div>
+                  <button
+                    onClick={() => { setCursor(d); setView("day"); }}
+                    className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded-full text-xs transition-colors hover:bg-accent sm:h-7 sm:w-7",
+                      toDateKey(d) === toDateKey(new Date()) && "bg-primary font-semibold text-primary-foreground hover:bg-primary/90",
+                    )}
+                    aria-label={"Apri appuntamenti del " + d.toLocaleDateString("it-IT")}
+                  >{d.getDate()}</button>
                   <div className="mt-1 space-y-1">
-                    {items.slice(0, 3).map((a) => (
+                    {items.slice(0, 2).map((a) => (
                       <button
                         key={a.id}
                         onClick={() => setSelected(a)}
                         className={cn(
-                          "block w-full truncate rounded border px-1 py-0.5 text-left text-[11px]",
+                          "block w-full truncate rounded-md border px-1 py-1 text-left text-[9px] leading-tight sm:px-1.5 sm:text-[11px]",
                           STATUS_CLASSES[a.status],
                         )}
                       >
-                        {hhmm(a.start_time)} {a.customer_name || a.services?.name}
+                        <span className="font-semibold">{hhmm(a.start_time)}</span><span className="hidden sm:inline"> {a.customer_name || a.services?.name}</span>
                       </button>
                     ))}
                     {items.length > 3 && (
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[9px] font-medium text-muted-foreground sm:text-[11px]">
                         +{items.length - 3} altri
                       </span>
                     )}
