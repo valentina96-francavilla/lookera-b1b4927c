@@ -204,13 +204,23 @@ function ClientsContent({ salonId }: { salonId: string }) {
                   <p className="text-muted-foreground">{c.visits.length} appuntamenti</p>
                 </div>
               </div>
-              <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-                {c.visits.slice(0, 4).map((v) => (
-                  <li key={v.id}>
-                    {formatDateIt(v.appointment_date)} · {hhmm(v.start_time)} · {v.services?.name}
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-4 border-t border-border pt-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Storico appuntamenti ({c.visits.length})</p>
+                <ul className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
+                  {c.visits.map((v) => (
+                    <li key={v.id} className="flex items-start justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground">{formatDateIt(v.appointment_date)} · {hhmm(v.start_time)}</p>
+                        <p className="mt-0.5 truncate text-muted-foreground">{v.services?.name || "Servizio"}</p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-medium text-foreground">{euro(v.price)}</p>
+                        <p className="capitalize text-muted-foreground">{v.status.replaceAll("_", " ")}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
               );
           })}
