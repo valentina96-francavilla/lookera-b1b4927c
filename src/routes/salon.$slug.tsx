@@ -111,6 +111,7 @@ function PublicSalonPage() {
   const [slot, setSlot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useEffect(() => {
     setIsDemo(new URLSearchParams(window.location.search).get("demo") === "1");
@@ -379,8 +380,27 @@ function PublicSalonPage() {
           </ul>
         </section>
 
-        <section className="mt-8" id="prenota">
-          <h2 className="text-2xl">Prenota</h2>
+        <section className="surface mt-8 flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">LookEra · Prenotazione online</p>
+            <h2 className="mt-2 font-display text-2xl">Vuoi prenotare da noi?</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Bastano tre semplici passaggi:</p>
+            <ol className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              <li><span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-semibold">1</span>Scegli il servizio</li>
+              <li><span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-semibold">2</span>Scegli il giorno</li>
+              <li><span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-semibold">3</span>Conferma i tuoi dati</li>
+            </ol>
+          </div>
+          <Button size="lg" className="shrink-0 rounded-xl px-7" onClick={() => setBookingOpen(true)}>Prenota ora <span className="ml-2">→</span></Button>
+        </section>
+
+        {bookingOpen && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/45 p-0 backdrop-blur-sm sm:items-center sm:p-5" onMouseDown={(e) => { if (e.target === e.currentTarget) setBookingOpen(false); }}>
+            <section className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-2xl sm:rounded-2xl sm:p-7" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+              <div className="mb-5 flex items-start justify-between gap-4 border-b border-border pb-4">
+                <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Prenotazione online</p><h2 id="booking-title" className="mt-1 font-display text-2xl">Prenota da {salon.name}</h2><p className="mt-1 text-sm text-muted-foreground">Scegli servizio, data e orario. Poi conferma i tuoi dati.</p></div>
+                <Button variant="ghost" size="icon" aria-label="Chiudi prenotazione" onClick={() => setBookingOpen(false)}>×</Button>
+              </div>
 
           <div className="surface mt-4 p-5">
             <p className="text-sm font-medium">1. Scegli il servizio</p>
@@ -522,7 +542,9 @@ function PublicSalonPage() {
               </Button>
             </form>
           )}
-        </section>
+            </section>
+          </div>
+        )}
 
         {salon?.plan === "professional" && ratings.length > 0 && (
           <section className="mt-10">
