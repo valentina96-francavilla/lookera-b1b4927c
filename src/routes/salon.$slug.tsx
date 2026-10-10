@@ -360,25 +360,40 @@ function PublicSalonPage() {
           </div>
         </div>
 
-        <section className="surface mt-8 p-5">
-          <h2 className="flex items-center gap-2 text-lg">
-            <Clock className="h-4 w-4" /> Orari
-          </h2>
-          <ul className="mt-3 space-y-1 text-sm">
-            {(hoursQ.data ?? []).map((h) => (
-              <li key={h.id} className="flex justify-between">
-                <span>{WEEKDAYS[h.day_of_week]}</span>
-                <span className="text-muted-foreground">
-                  {h.is_closed
-                    ? "Chiuso"
-                    : `${hhmm(h.open_time)}–${hhmm(h.close_time)}${
-                        h.break_start ? ` (pausa ${hhmm(h.break_start)}–${hhmm(h.break_end)})` : ""
-                      }`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <details className="surface mt-8 overflow-hidden">
+          <summary className="flex cursor-pointer list-none items-center gap-3 p-5 [&::-webkit-details-marker]:hidden">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+              <Clock className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">Orari di apertura</span>
+              <span className="mt-0.5 block text-sm text-muted-foreground">
+                {(() => {
+                  const today = (hoursQ.data ?? []).find((h) => h.day_of_week === new Date().getDay());
+                  return today && !today.is_closed
+                    ? `Oggi ${hhmm(today.open_time)}–${hhmm(today.close_time)}`
+                    : "Consulta gli orari della settimana";
+                })()}
+              </span>
+            </span>
+            <span className="text-sm text-primary">Vedi tutti</span>
+            <span className="text-muted-foreground">⌄</span>
+          </summary>
+          <div className="border-t border-border px-5 py-4">
+            <ul className="space-y-3 text-sm">
+              {(hoursQ.data ?? []).slice().sort((a, b) => ((a.day_of_week + 6) % 7) - ((b.day_of_week + 6) % 7)).map((h) => (
+                <li key={h.id} className="flex items-start justify-between gap-4">
+                  <span className="font-medium">{WEEKDAYS[h.day_of_week]}</span>
+                  <span className="text-right text-muted-foreground">
+                    {h.is_closed
+                      ? "Chiuso"
+                      : <>{hhmm(h.open_time)}–{hhmm(h.close_time)}{h.break_start ? <span className="block text-xs">Pausa {hhmm(h.break_start)}–{hhmm(h.break_end)}</span> : null}</>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
 
         <section className="surface mt-8 flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div>
