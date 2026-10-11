@@ -111,7 +111,7 @@ function PublicSalonPage() {
   const [slot, setSlot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
-  const [bookingOpen, setBookingOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);\n  const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
   useEffect(() => {
     setIsDemo(new URLSearchParams(window.location.search).get("demo") === "1");
@@ -260,22 +260,16 @@ function PublicSalonPage() {
   const availableDays = (() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Always start from Monday of the current week, so the calendar
-    // is consistently displayed Monday → Sunday.
-    const monday = new Date(today);
-    const dayOfWeek = monday.getDay();
-    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    monday.setDate(monday.getDate() - daysFromMonday);
-
-    // 9 complete weeks = Monday → Sunday throughout the calendar.
-    return Array.from({ length: 63 }, (_, i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+    const first = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+    const mondayOffset = (first.getDay() + 6) % 7;
+    const gridStart = new Date(first);
+    gridStart.setDate(first.getDate() - mondayOffset);
+    return Array.from({ length: 42 }, (_, i) => {
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate() + i);
       const key = toDateKey(d);
       const hours = (hoursQ.data ?? []).find((h) => h.day_of_week === d.getDay());
-      const past = d < today;
-      return { date: d, key, closed: past || !hours || hours.is_closed };
+      return { date: d, key, closed: d < today || !hours || hours.is_closed, inMonth: d.getMonth() === calendarMonth.getMonth() };
     });
   })();
 
@@ -452,30 +446,23 @@ function PublicSalonPage() {
           {service && (
             <div className="surface mt-4 p-5">
               <p className="text-sm font-medium">2. Scegli il giorno</p>
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-7">
-                {availableDays.map(({ date: day, key, closed }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    disabled={closed}
-                    onClick={() => {
-                      setDate(key);
-                      setSlot("");
-                    }}
-                    className={cn(
-                      "rounded-xl border px-2 py-3 text-center text-sm transition-colors",
-                      closed
-                        ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground/50"
-                        : date === key
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:bg-muted",
-                    )}
-                    aria-label={closed ? `${formatDateIt(key)} non disponibile` : `Seleziona ${formatDateIt(key)}`}
-                  >
-                    <span className="block font-medium">{day.toLocaleDateString("it-IT", { weekday: "short" })}</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">{day.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" })}</span>
-                  </button>
-                ))}
+              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background p-3 sm:p-4">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <Button type="button" variant="outline" size="icon" aria-label="Mese precedente" disabled={calendarMonth.getFullYear() === new Date().getFullYear() && calendarMonth.getMonth() === new Date().getMonth()} onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}>‹</Button>
+                  <h3 className="font-semibold capitalize">{calendarMonth.toLocaleDateString("it-IT", { month: "long", year: "numeric" })}</h3>
+                  <Button type="button" variant="outline" size="icon" aria-label="Mese successivo" onClick={() => setCalendarMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}>›</Button>
+                </div>
+                <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted-foreground">
+                  {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((label) => <span key={label} className="py-2">{label}</span>)}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {availableDays.map(({ date: day, key, closed, inMonth }) => (
+                    <button key={key} type="button" disabled={closed || !inMonth} onClick={() => { setDate(key); setSlot(""); }}
+                      className={cn("aspect-square min-h-9 rounded-xl text-sm transition-colors sm:min-h-10", !inMonth && "pointer-events-none text-transparent", inMonth && closed && "cursor-not-allowed text-muted-foreground/35", inMonth && !closed && "hover:bg-accent", date === key && "bg-primary font-semibold text-primary-foreground shadow-sm hover:bg-primary")}
+                      aria-label={closed ? `${formatDateIt(key)} non disponibile` : `Seleziona ${formatDateIt(key)}`} aria-pressed={date === key}>{inMonth ? day.getDate() : ""}</button>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-muted-foreground">I giorni passati o di chiusura non sono selezionabili.</p>
               </div>
             </div>
           )}
