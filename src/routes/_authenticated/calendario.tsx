@@ -40,7 +40,7 @@ function CalendarRoute() {
 }
 
 function CalendarContent({ salonId }: { salonId: string }) {
-  const [view, setView] = useState<View>("week");
+  const [view, setView] = useState<View>("month");
   const [cursor, setCursor] = useState(new Date());
   const [selected, setSelected] = useState<AppointmentRow | null>(null);
 
