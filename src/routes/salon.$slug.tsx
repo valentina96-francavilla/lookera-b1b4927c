@@ -111,7 +111,8 @@ function PublicSalonPage() {
   const [slot, setSlot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
-  const [bookingOpen, setBookingOpen] = useState(false);\n  const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
   useEffect(() => {
     setIsDemo(new URLSearchParams(window.location.search).get("demo") === "1");
