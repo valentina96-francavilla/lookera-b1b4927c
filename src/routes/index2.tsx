@@ -149,9 +149,9 @@ function Landing() {
 
       <section id="faq" className="border-t border-border bg-muted/40 py-16"><div className="mx-auto max-w-3xl px-4 sm:px-6"><h2 className="text-3xl">Domande frequenti</h2><Accordion type="single" collapsible className="mt-6">{faqs.map(f=><AccordionItem key={f.q} value={f.q}><AccordionTrigger className="text-left">{f.q}</AccordionTrigger><AccordionContent className="text-muted-foreground">{f.a}</AccordionContent></AccordionItem>)}</Accordion></div></section>
 
-      <section className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6"><h2 className="text-3xl sm:text-4xl">Pronta a liberare il telefono?</h2><p className="mx-auto mt-3 max-w-xl text-muted-foreground">Configura il tuo salone oggi e ricevi la prima prenotazione online entro stasera.</p><Button size="lg" className="mt-8" onClick={()=>setContactOpen(true)}>Contattaci</Button></section>
+      <section className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6"><h2 className="text-3xl sm:text-4xl">Pronta a liberare il telefono?</h2><p className="mx-auto mt-3 max-w-xl text-muted-foreground">Configura il tuo salone in pochi minuti.</p><Button size="lg" className="mt-8" onClick={()=>setContactOpen(true)}>Contattaci</Button></section>
 
-      <footer className="border-t border-border py-8"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:px-6"><span className="font-display text-base text-foreground">Look<span className="text-primary">Era</span></span><span>© {new Date().getFullYear()} LookEra — prenotazioni per saloni</span></div></footer>
+      <footer className="border-t border-border py-8"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:px-6"><span className="font-display text-base text-foreground">Look<span className="text-primary">Era</span></span><div className="flex flex-col gap-1 sm:items-end"><span>© {new Date().getFullYear()} LookEra</span><span>Un progetto di <a href="https://valeyastudio.it/" className="underline-offset-4 hover:text-foreground hover:underline">Valeya Studio</a></span></div></div></footer>
 
       <ContactDialog open={contactOpen} onClose={()=>setContactOpen(false)} />
     </div>
