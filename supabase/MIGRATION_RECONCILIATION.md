@@ -23,6 +23,7 @@ The production migration table currently records these versions:
 | 20261118141705 | harden_lookera_security |
 | 20261118141841 | optimize_lookera_rls_and_indexes |
 | 20261118142000 | optimize_appointment_insert_policy |
+| 20261118144132 | revoke_unused_salon_rating_rpc |
 
 ## Important mismatch
 
