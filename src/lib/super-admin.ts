@@ -107,10 +107,13 @@ export function useAdminData() {
   const users = useQuery({
     queryKey: ["sa", "users"],
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as any)("admin_list_users");
+      const { data, error } = await supabase.functions.invoke("admin-manage-user", {
+        body: { action: "list_users" },
+      });
 
       if (error) throw error;
-      return (data ?? []) as AdminUser[];
+      if (data?.error) throw new Error(data.error);
+      return (data?.users ?? []) as AdminUser[];
     },
   });
 
