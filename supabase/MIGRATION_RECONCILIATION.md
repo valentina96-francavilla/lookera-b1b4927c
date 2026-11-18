@@ -27,7 +27,7 @@ The production migration table currently records these versions:
 
 ## Important mismatch
 
-The repository contains historical SQL files with version identifiers that do not all match the production migration history. Several changes from those files are visible in the current production schema, but their corresponding version identifiers are not recorded in `supabase_migrations.schema_migrations`.
+The three repository files whose migration names matched production records have now been renamed to the exact recorded production versions (`20260930073204`, `20261001104340`, `20261006070848`). The `20260930102739` file already matched. Other historical SQL files still have no corresponding version in production migration history. Their effects are partly visible in the current schema, but they have not been marked as applied in the migration ledger.
 
 This is migration-history drift. It does **not** by itself mean that the production schema is missing those changes.
 
