@@ -38,6 +38,51 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body?.action;
 
+    if (action === "list_users") {
+      const allUsers: Array<{
+        id: string;
+        email?: string;
+        created_at: string;
+        last_sign_in_at?: string;
+        updated_at?: string;
+        user_metadata?: Record<string, unknown>;
+      }> = [];
+      const perPage = 1000;
+      for (let page = 1; page <= 100; page += 1) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+        if (error) return json({ error: error.message }, 400);
+        const pageUsers = data.users ?? [];
+        allUsers.push(...pageUsers);
+        if (pageUsers.length < perPage) break;
+      }
+
+      const [{ data: profiles, error: profilesError }, { data: roles, error: rolesError }] = await Promise.all([
+        admin.from("profiles").select("id, full_name"),
+        admin.from("user_roles").select("user_id, role"),
+      ]);
+      if (profilesError) return json({ error: profilesError.message }, 500);
+      if (rolesError) return json({ error: rolesError.message }, 500);
+
+      const names = new Map((profiles ?? []).map((profile) => [profile.id, profile.full_name]));
+      const roleMap = new Map<string, string[]>();
+      for (const row of roles ?? []) {
+        const current = roleMap.get(row.user_id) ?? [];
+        current.push(row.role);
+        roleMap.set(row.user_id, current);
+      }
+
+      const result = allUsers.map((user) => ({
+        id: user.id,
+        email: user.email ?? "",
+        full_name: names.get(user.id) ?? String(user.user_metadata?.full_name ?? ""),
+        roles: roleMap.get(user.id) ?? [],
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at ?? null,
+        updated_at: user.updated_at ?? null,
+      }));
+      return json({ users: result });
+    }
+
     if (action === "create") {
       const name = String(body?.name ?? "").trim();
       const email = String(body?.email ?? "").trim().toLowerCase();
