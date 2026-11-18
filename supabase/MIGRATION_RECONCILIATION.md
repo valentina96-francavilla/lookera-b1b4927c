@@ -31,6 +31,20 @@ The three repository files whose migration names matched production records have
 
 This is migration-history drift. It does **not** by itself mean that the production schema is missing those changes.
 
+The remaining local-only historical versions are:
+
+- `20260828142945`
+- `20260828142959`
+- `20260925094501`
+- `20260925094517`
+- `20260929120000`
+- `20260929121500`
+- `20260930105000`
+- `20261001112000`
+- `20261004170000`
+
+The production versions all now have a matching migration file in the repository. These nine older files must be reconciled with the production ledger using the Supabase CLI migration-repair workflow after confirming each migration's effects; do not replay their SQL against production.
+
 ## Safety rule
 
 Do not run `supabase db push`, reset, or a bulk migration repair against production until each historical SQL file has been mapped to the exact production change it represents. Reapplying old SQL can fail or alter production unexpectedly.
